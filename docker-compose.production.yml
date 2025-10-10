@@ -49,6 +49,12 @@ services:
 
   queue:
     <<: [*php, *logging]
-    command: php artisan queue:work --timeout=0
+    user: root
+    command: /usr/bin/supervisord -c /etc/supervisord.conf
+    environment:
+      QUEUE_WORKER_CPUS: ${QUEUE_WORKER_CPUS:-2}
     healthcheck:
-      disable: true
+      test: ["CMD", "supervisorctl", "status"]
+      interval: 15s
+      timeout: 5s
+      retries: 3
