@@ -233,8 +233,15 @@ To use a custom domain:
    php artisan laradox:setup-ssl --domain=myapp.test
    ```
 
-3. Update `docker/nginx/conf.d/app.conf` with your domain
+3. Restart the containers to apply the domain change:
+   ```bash
+   php artisan laradox:down
+   php artisan laradox:up --detach
+   ```
+
 4. Add domain to your `/etc/hosts` file (if not using .localhost)
+
+> **Note**: The domain is automatically configured in Nginx using environment variables. You don't need to manually edit `docker/nginx/conf.d/app.conf`.
 
 ### Docker Configuration
 
