@@ -43,6 +43,16 @@ services:
     environment:
       - SERVER_NAME=:8080
 
+  node:
+    <<: *logging
+    image: node:22-alpine
+    user: node
+    working_dir: /srv
+    entrypoint: ["tail", "-f", "/dev/null"]
+    volumes:
+      - .:/srv
+      - ./node_modules:/srv/node_modules
+
   scheduler:
     <<: [*php, *logging]
     command: supercronic /srv/docker/php/config/schedule.cron
