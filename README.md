@@ -217,6 +217,27 @@ Laradox includes the following services:
 - **scheduler**: Laravel scheduler (development) or Supercronic (production)
 - **queue**: Laravel queue worker with Supervisor (production only)
 
+### Scheduler Configuration
+
+The scheduler service handles Laravel's task scheduling differently based on environment:
+
+**Development:**
+- Uses `php artisan schedule:work` for real-time scheduling
+- Automatically detects and runs scheduled tasks
+
+**Production:**
+- Uses [Supercronic](https://github.com/aptible/supercronic) for reliable cron execution
+- Configuration file: `docker/php/config/schedule.cron`
+- Runs `php artisan schedule:run` every minute
+
+To modify the schedule in production, edit `docker/php/config/schedule.cron`:
+
+```cron
+* * * * * cd /srv && php artisan schedule:run >> /dev/null 2>&1
+```
+
+> **Note**: Define your actual scheduled tasks in `app/Console/Kernel.php` using Laravel's scheduler. The cron file only triggers Laravel's scheduler.
+
 ## Customization
 
 ### Custom Domain
