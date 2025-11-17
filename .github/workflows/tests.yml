@@ -13,20 +13,21 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-latest, macos-latest]
+        os: [ubuntu-latest]
         php: [8.2, 8.3, 8.4]
-        laravel: [10.*, 11.*]
-        stability: [prefer-lowest, prefer-stable]
+        laravel: [11.*]
+        stability: [prefer-stable]
         include:
-          - laravel: 10.*
-            testbench: ^8.0
           - laravel: 11.*
             testbench: ^9.0
-        exclude:
-          - php: 8.4
-            laravel: 10.*
+          - laravel: 12.*
+            testbench: ^10.0
+            php: 8.3
+          - laravel: 12.*
+            testbench: ^10.0
+            php: 8.4
             
-    name: P${{ matrix.php }} - L${{ matrix.laravel }} - ${{ matrix.stability }} - ${{ matrix.os }}
+    name: P${{ matrix.php }} - L${{ matrix.laravel }} - ${{ matrix.os }}
 
     steps:
       - name: Checkout code
@@ -47,7 +48,7 @@ jobs:
       - name: Install dependencies
         run: |
           composer require "laravel/framework:${{ matrix.laravel }}" "orchestra/testbench:${{ matrix.testbench }}" --no-interaction --no-update
-          composer update --${{ matrix.stability }} --prefer-dist --no-interaction
+          composer update --prefer-dist --no-interaction
 
       - name: List Installed Dependencies
         run: composer show -D
@@ -57,7 +58,7 @@ jobs:
 
       - name: Upload coverage to Codecov
         uses: codecov/codecov-action@v4
-        if: matrix.php == '8.2' && matrix.laravel == '11.*' && matrix.os == 'ubuntu-latest' && matrix.stability == 'prefer-stable'
+        if: matrix.php == '8.3' && matrix.laravel == '11.*' && matrix.os == 'ubuntu-latest'
         with:
           file: ./coverage.xml
           fail_ci_if_error: false
