@@ -1,0 +1,67 @@
+{
+    "name": "laradox/laradox",
+    "description": "Plug-and-play Docker environment for Laravel with FrankenPHP, Nginx, and Octane support",
+    "type": "library",
+    "keywords": [
+        "laravel",
+        "docker",
+        "frankenphp",
+        "octane",
+        "nginx",
+        "laradox",
+        "laravel-docker",
+        "laravel-octane",
+        "docker-compose",
+        "php",
+        "development-environment"
+    ],
+    "homepage": "https://github.com/adityarizqi/laradox",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Aditya Rizqi Januarta",
+            "email": "adityarizqi@example.com",
+            "homepage": "https://github.com/adityarizqi",
+            "role": "Developer"
+        }
+    ],
+    "support": {
+        "issues": "https://github.com/adityarizqi/laradox/issues",
+        "source": "https://github.com/adityarizqi/laradox"
+    },
+    "require": {
+        "php": "^8.2",
+        "illuminate/support": "^10.0|^11.0",
+        "illuminate/console": "^10.0|^11.0"
+    },
+    "require-dev": {
+        "phpunit/phpunit": "^10.0|^11.0"
+    },
+    "autoload": {
+        "psr-4": {
+            "Laradox\\": "src/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Laradox\\Tests\\": "tests/"
+        }
+    },
+    "extra": {
+        "laravel": {
+            "providers": [
+                "Laradox\\LaradoxServiceProvider"
+            ]
+        }
+    },
+    "config": {
+        "sort-packages": true,
+        "preferred-install": "dist",
+        "optimize-autoloader": true
+    },
+    "minimum-stability": "stable",
+    "prefer-stable": true,
+    "scripts": {
+        "test": "phpunit"
+    }
+}
