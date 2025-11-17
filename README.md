@@ -1,5 +1,7 @@
 # Laradox
 
+![Laradox Banner](https://dl.dropbox.com/scl/fi/a3u7k6ac3y1ykf9r22esy/laradox_banner.webp?rlkey=bqmb5v5w6tu9x4hu30yc8g28m&st=zqdosn19&dl=0)
+
 [![Tests](https://github.com/adityarizqi/laradox/workflows/Tests/badge.svg)](https://github.com/adityarizqi/laradox/actions)
 [![Latest Stable Version](https://poser.pugx.org/adityarizqi/laradox/v)](https://packagist.org/packages/adityarizqi/laradox)
 [![License](https://poser.pugx.org/adityarizqi/laradox/license)](https://packagist.org/packages/adityarizqi/laradox)

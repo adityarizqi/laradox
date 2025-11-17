@@ -1,0 +1,1007 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Laradox - Plug-and-play Docker environment for Laravel with FrankenPHP, Nginx, and Octane support">
+    <meta name="keywords" content="laravel, docker, frankenphp, octane, nginx, laradox, laravel-docker">
+    <meta name="author" content="Aditya Rizqi Januarta">
+    <title>Laradox - Laravel Docker Environment with FrankenPHP</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #93307f;
+            --primary-dark: #7a2868;
+            --secondary: #1f407b;
+            --text-dark: #1a202c;
+            --text-light: #718096;
+            --bg-light: #f7fafc;
+            --bg-dark: #0f1419;
+            --border: #e2e8f0;
+            --success: #10b981;
+            --gradient-start: #667eea;
+            --gradient-end: #764ba2;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            line-height: 1.6;
+            color: var(--text-dark);
+            overflow-x: hidden;
+        }
+
+        /* Header */
+        header {
+            position: fixed;
+            top: 0;
+            width: 100%;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+            z-index: 1000;
+            transition: all 0.3s ease;
+        }
+
+        nav {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            font-size: 1.5rem;
+            font-weight: 800;
+            color: var(--primary);
+            text-decoration: none;
+        }
+
+        .logo img {
+            height: 40px;
+            width: auto;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 2rem;
+            list-style: none;
+            align-items: center;
+        }
+
+        .nav-links a {
+            text-decoration: none;
+            color: var(--text-dark);
+            font-weight: 500;
+            transition: color 0.3s ease;
+        }
+
+        .nav-links a:hover {
+            color: var(--primary);
+        }
+
+        .btn {
+            padding: 0.75rem 1.5rem;
+            border-radius: 8px;
+            font-weight: 600;
+            text-decoration: none;
+            transition: all 0.3s ease;
+            border: none;
+            cursor: pointer;
+            display: inline-block;
+        }
+
+        .btn-primary {
+            background: var(--primary);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: var(--primary-dark);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(255, 45, 32, 0.3);
+        }
+
+        .btn-secondary {
+            background: transparent;
+            color: var(--text-dark);
+            border: 2px solid var(--border);
+        }
+
+        .btn-secondary:hover {
+            border-color: var(--primary);
+            color: var(--primary);
+        }
+
+        /* Hero Section */
+        .hero {
+            margin-top: 80px;
+            padding: 6rem 2rem;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .hero::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.05'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+            opacity: 0.1;
+        }
+
+        .hero-content {
+            max-width: 900px;
+            margin: 0 auto;
+            position: relative;
+            z-index: 1;
+        }
+
+        .hero h1 {
+            font-size: 3.5rem;
+            font-weight: 800;
+            margin-bottom: 1.5rem;
+            line-height: 1.2;
+        }
+
+        .hero p {
+            font-size: 1.25rem;
+            margin-bottom: 2.5rem;
+            opacity: 0.95;
+            max-width: 700px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .hero-buttons {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .hero .btn {
+            font-size: 1.1rem;
+            padding: 1rem 2rem;
+        }
+
+        .hero .btn-secondary {
+            background: rgba(255, 255, 255, 0.2);
+            border-color: rgba(255, 255, 255, 0.3);
+            color: white;
+            backdrop-filter: blur(10px);
+        }
+
+        .hero .btn-secondary:hover {
+            background: rgba(255, 255, 255, 0.3);
+            border-color: white;
+        }
+
+        .badges {
+            display: flex;
+            gap: 0.5rem;
+            justify-content: center;
+            margin-top: 2rem;
+            flex-wrap: wrap;
+        }
+
+        .badges img {
+            height: 20px;
+        }
+
+        /* Features Section */
+        .features {
+            padding: 6rem 2rem;
+            background: white;
+        }
+
+        .section-title {
+            text-align: center;
+            font-size: 2.5rem;
+            font-weight: 800;
+            margin-bottom: 1rem;
+            color: var(--text-dark);
+        }
+
+        .section-subtitle {
+            text-align: center;
+            font-size: 1.1rem;
+            color: var(--text-light);
+            margin-bottom: 4rem;
+            max-width: 600px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .feature-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .feature-card {
+            padding: 2rem;
+            border-radius: 12px;
+            background: var(--bg-light);
+            border: 2px solid var(--border);
+            transition: all 0.3s ease;
+        }
+
+        .feature-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            border-color: var(--primary);
+        }
+
+        .feature-icon {
+            width: 48px;
+            height: 48px;
+            background: linear-gradient(135deg, var(--gradient-start), var(--gradient-end));
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 1.5rem;
+            color: white;
+            font-size: 1.5rem;
+        }
+
+        .feature-card h3 {
+            font-size: 1.5rem;
+            margin-bottom: 1rem;
+            color: var(--text-dark);
+        }
+
+        .feature-card p {
+            color: var(--text-light);
+            line-height: 1.8;
+        }
+
+        /* Performance Section */
+        .performance {
+            padding: 6rem 2rem;
+            background: var(--bg-light);
+        }
+
+        .performance-content {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .performance-stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 2rem;
+            margin-top: 3rem;
+        }
+
+        .stat-card {
+            background: white;
+            padding: 2rem;
+            border-radius: 12px;
+            text-align: center;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+        }
+
+        .stat-number {
+            font-size: 3rem;
+            font-weight: 800;
+            color: var(--primary);
+            margin-bottom: 0.5rem;
+        }
+
+        .stat-label {
+            color: var(--text-light);
+            font-weight: 600;
+        }
+
+        /* Quick Start Section */
+        .quick-start {
+            padding: 6rem 2rem;
+            background: white;
+        }
+
+        .quick-start-content {
+            max-width: 900px;
+            margin: 0 auto;
+        }
+
+        .steps {
+            display: flex;
+            flex-direction: column;
+            gap: 2rem;
+            margin-top: 3rem;
+        }
+
+        .step {
+            display: grid;
+            grid-template-columns: 48px 1fr;
+            gap: 2rem;
+            align-items: start;
+        }
+
+        .step-number {
+            flex-shrink: 0;
+            width: 48px;
+            height: 48px;
+            background: linear-gradient(135deg, var(--gradient-start), var(--gradient-end));
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 800;
+            font-size: 1.25rem;
+        }
+
+        .step-content {
+            min-width: 0;
+        }
+
+        .step-content h3 {
+            font-size: 1.5rem;
+            margin-bottom: 0.75rem;
+            color: var(--text-dark);
+        }
+
+        .step-content p {
+            color: var(--text-light);
+            margin-bottom: 1rem;
+        }
+
+        .code-block {
+            background: var(--bg-dark);
+            color: #e5e7eb;
+            padding: 1.5rem;
+            padding-right: 5rem;
+            border-radius: 8px;
+            overflow-x: auto;
+            font-family: 'Monaco', 'Courier New', monospace;
+            font-size: 0.9rem;
+            position: relative;
+            max-width: 100%;
+        }
+
+        .code-block code {
+            display: block;
+            white-space: pre;
+            overflow-wrap: break-word;
+            word-break: break-all;
+        }
+
+        .copy-btn {
+            position: absolute;
+            top: 0.75rem;
+            right: 0.75rem;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            color: white;
+            padding: 0.5rem 1rem;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.85rem;
+            transition: all 0.3s ease;
+        }
+
+        .copy-btn:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        /* Testimonials / Use Cases */
+        .testimonials {
+            padding: 6rem 2rem;
+            background: var(--bg-light);
+        }
+
+        .testimonials-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+            max-width: 1200px;
+            margin: 3rem auto 0;
+        }
+
+        .testimonial-card {
+            background: white;
+            padding: 2rem;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+        }
+
+        .testimonial-icon {
+            font-size: 2rem;
+            margin-bottom: 1rem;
+        }
+
+        .testimonial-card h3 {
+            font-size: 1.25rem;
+            margin-bottom: 1rem;
+            color: var(--text-dark);
+        }
+
+        .testimonial-card p {
+            color: var(--text-light);
+            line-height: 1.8;
+        }
+
+        /* CTA Section */
+        .cta {
+            padding: 6rem 2rem;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            text-align: center;
+        }
+
+        .cta h2 {
+            font-size: 2.5rem;
+            font-weight: 800;
+            margin-bottom: 1.5rem;
+        }
+
+        .cta p {
+            font-size: 1.25rem;
+            margin-bottom: 2.5rem;
+            opacity: 0.95;
+            max-width: 600px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .cta .btn {
+            font-size: 1.1rem;
+            padding: 1rem 2rem;
+        }
+
+        .cta .btn-primary {
+            background: white;
+            color: var(--primary);
+        }
+
+        .cta .btn-primary:hover {
+            background: var(--bg-light);
+        }
+
+        /* Footer */
+        footer {
+            background: var(--text-dark);
+            color: white;
+            padding: 3rem 2rem 2rem;
+        }
+
+        .footer-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 3rem;
+            margin-bottom: 2rem;
+        }
+
+        .footer-section h3 {
+            font-size: 1.25rem;
+            margin-bottom: 1rem;
+        }
+
+        .footer-section ul {
+            list-style: none;
+        }
+
+        .footer-section ul li {
+            margin-bottom: 0.75rem;
+        }
+
+        .footer-section a {
+            color: rgba(255, 255, 255, 0.7);
+            text-decoration: none;
+            transition: color 0.3s ease;
+        }
+
+        .footer-section a:hover {
+            color: white;
+        }
+
+        .footer-bottom {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding-top: 2rem;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            text-align: center;
+            color: rgba(255, 255, 255, 0.6);
+        }
+
+        .social-links {
+            display: flex;
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+
+        .social-links a {
+            width: 40px;
+            height: 40px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+        }
+
+        .social-links a:hover {
+            background: var(--primary);
+            transform: translateY(-3px);
+        }
+
+        /* Mobile Menu */
+        .mobile-menu-btn {
+            display: none;
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: var(--text-dark);
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .nav-links {
+                display: none;
+            }
+
+            .mobile-menu-btn {
+                display: block;
+            }
+
+            .hero h1 {
+                font-size: 2.5rem;
+            }
+
+            .hero p {
+                font-size: 1.1rem;
+            }
+
+            .section-title {
+                font-size: 2rem;
+            }
+
+            .step {
+                grid-template-columns: 40px 1fr;
+                gap: 1rem;
+            }
+
+            .step-number {
+                width: 40px;
+                height: 40px;
+                font-size: 1.1rem;
+            }
+
+            .step-content h3 {
+                font-size: 1.25rem;
+            }
+
+            .code-block {
+                padding: 1rem;
+                padding-right: 4rem;
+                font-size: 0.85rem;
+            }
+
+            .copy-btn {
+                padding: 0.4rem 0.8rem;
+                font-size: 0.75rem;
+                top: 0.5rem;
+                right: 0.5rem;
+            }
+
+            .hero-buttons {
+                flex-direction: column;
+            }
+
+            .quick-start {
+                padding: 4rem 1.5rem;
+            }
+
+            .section-subtitle {
+                font-size: 1rem;
+                padding: 0 1rem;
+            }
+        }
+
+        /* Animations */
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .animate-in {
+            animation: fadeInUp 0.6s ease-out forwards;
+        }
+
+        /* Scrollbar Styling */
+        ::-webkit-scrollbar {
+            width: 10px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: var(--bg-light);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--primary);
+            border-radius: 5px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--primary-dark);
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <header>
+        <nav>
+            <a href="#" class="logo">
+                <img src="https://dl.dropbox.com/scl/fi/ijzuovof2seiyonurci4m/laradox_logo.webp?rlkey=s473g4sp1addnvdd08vaddcjr&st=hgfmpokt&dl=0" alt="Laradox Logo">
+            </a>
+            <ul class="nav-links">
+                <li><a href="#features">Features</a></li>
+                <li><a href="#performance">Performance</a></li>
+                <li><a href="#quick-start">Quick Start</a></li>
+                <li><a href="https://github.com/adityarizqi/laradox" target="_blank">GitHub</a></li>
+                <li><a href="https://packagist.org/packages/adityarizqi/laradox" target="_blank" class="btn btn-primary" style="color: white;">Install</a></li>
+            </ul>
+            <button class="mobile-menu-btn">☰</button>
+        </nav>
+    </header>
+
+    <!-- Hero Section -->
+    <section class="hero">
+        <div class="hero-content">
+            <h1>Laravel Docker Environment with FrankenPHP</h1>
+            <p>Plug-and-play Docker environment optimized for Laravel Octane with FrankenPHP. Production-ready with automatic HTTPS, Nginx, and blazing-fast performance.</p>
+            <div class="hero-buttons">
+                <a href="#quick-start" class="btn btn-primary">Get Started</a>
+                <a href="https://github.com/adityarizqi/laradox" target="_blank" class="btn btn-secondary">View on GitHub</a>
+            </div>
+            <div class="badges">
+                <img src="https://github.com/adityarizqi/laradox/workflows/Tests/badge.svg" alt="Tests">
+                <img src="https://poser.pugx.org/adityarizqi/laradox/v" alt="Version">
+                <img src="https://poser.pugx.org/adityarizqi/laradox/license" alt="License">
+            </div>
+        </div>
+    </section>
+
+    <!-- Features Section -->
+    <section id="features" class="features">
+        <h2 class="section-title">Powerful Features</h2>
+        <p class="section-subtitle">Everything you need for modern Laravel development and production deployments</p>
+        <div class="feature-grid">
+            <div class="feature-card">
+                <div class="feature-icon">🚀</div>
+                <h3>Laravel Octane</h3>
+                <p>Supercharged performance with FrankenPHP for blazing-fast response times and reduced latency.</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">🔒</div>
+                <h3>HTTPS by Default</h3>
+                <p>Automatic SSL certificates using mkcert for secure local development without configuration hassle.</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">🐳</div>
+                <h3>Docker Compose</h3>
+                <p>Separate configurations for development and production with optimized settings for each environment.</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">⚡</div>
+                <h3>Nginx Reverse Proxy</h3>
+                <p>Production-grade reverse proxy with SSL termination and optimized settings for maximum throughput.</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">🔧</div>
+                <h3>Queue Workers</h3>
+                <p>Supervisor-managed queue workers for reliable background job processing in production.</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">⏰</div>
+                <h3>Task Scheduler</h3>
+                <p>Built-in scheduler with Supercronic for production and Laravel's scheduler for development.</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">📦</div>
+                <h3>Helper Scripts</h3>
+                <p>Convenient wrapper scripts for composer, npm, and php commands without entering containers.</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">🎯</div>
+                <h3>Easy Installation</h3>
+                <p>One-command installation via Composer with automatic configuration and setup.</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Performance Section -->
+    <section id="performance" class="performance">
+        <div class="performance-content">
+            <h2 class="section-title">Outstanding Performance</h2>
+            <p class="section-subtitle">Experience significant performance improvements with FrankenPHP and Laravel Octane</p>
+            <div class="performance-stats">
+                <div class="stat-card">
+                    <div class="stat-number">5x</div>
+                    <div class="stat-label">Faster Response Times</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number">10x</div>
+                    <div class="stat-label">More Requests/Second</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number">80%</div>
+                    <div class="stat-label">Lower Memory Usage</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number">99.9%</div>
+                    <div class="stat-label">Uptime Reliability</div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Quick Start Section -->
+    <section id="quick-start" class="quick-start">
+        <div class="quick-start-content">
+            <h2 class="section-title">Get Started in Minutes</h2>
+            <p class="section-subtitle">Follow these simple steps to get your Laravel application running with Docker</p>
+            <div class="steps">
+                <div class="step">
+                    <div class="step-number">1</div>
+                    <div class="step-content">
+                        <h3>Install Laradox</h3>
+                        <p>Add Laradox to your Laravel project via Composer</p>
+                        <div class="code-block">
+                            <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+                            <code>composer require adityarizqi/laradox --dev</code>
+                        </div>
+                    </div>
+                </div>
+                <div class="step">
+                    <div class="step-number">2</div>
+                    <div class="step-content">
+                        <h3>Install Laravel Octane</h3>
+                        <p>Add Laravel Octane for high-performance serving</p>
+                        <div class="code-block">
+                            <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+                            <code>composer require laravel/octane</code>
+                        </div>
+                    </div>
+                </div>
+                <div class="step">
+                    <div class="step-number">3</div>
+                    <div class="step-content">
+                        <h3>Run Installation</h3>
+                        <p>Install Docker configuration files and helper scripts</p>
+                        <div class="code-block">
+                            <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+                            <code>php artisan laradox:install</code>
+                        </div>
+                    </div>
+                </div>
+                <div class="step">
+                    <div class="step-number">4</div>
+                    <div class="step-content">
+                        <h3>Setup SSL Certificates</h3>
+                        <p>Generate local SSL certificates for HTTPS development</p>
+                        <div class="code-block">
+                            <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+                            <code>php artisan laradox:setup-ssl</code>
+                        </div>
+                    </div>
+                </div>
+                <div class="step">
+                    <div class="step-number">5</div>
+                    <div class="step-content">
+                        <h3>Start Docker Containers</h3>
+                        <p>Launch your Docker environment and start developing</p>
+                        <div class="code-block">
+                            <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+                            <code>php artisan laradox:up --detach</code>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div style="text-align: center; margin-top: 3rem;">
+                <p style="font-size: 1.25rem; color: var(--text-light); margin-bottom: 1rem;">
+                    🎉 Access your application at <strong style="color: var(--primary);">https://laravel.docker.localhost</strong>
+                </p>
+                <a href="https://github.com/adityarizqi/laradox#readme" target="_blank" class="btn btn-primary">Read Full Documentation</a>
+            </div>
+        </div>
+    </section>
+
+    <!-- Use Cases / Benefits Section -->
+    <section class="testimonials">
+        <h2 class="section-title">Perfect For</h2>
+        <p class="section-subtitle">Ideal for various development scenarios and team sizes</p>
+        <div class="testimonials-grid">
+            <div class="testimonial-card">
+                <div class="testimonial-icon">👨‍💻</div>
+                <h3>Solo Developers</h3>
+                <p>Quick setup and easy management for individual Laravel developers who want a consistent development environment across projects.</p>
+            </div>
+            <div class="testimonial-card">
+                <div class="testimonial-icon">👥</div>
+                <h3>Development Teams</h3>
+                <p>Standardized Docker environment ensures all team members work with identical configurations, eliminating "works on my machine" issues.</p>
+            </div>
+            <div class="testimonial-card">
+                <div class="testimonial-icon">🚀</div>
+                <h3>Production Deployments</h3>
+                <p>Production-ready configurations with optimized settings, queue workers, and reliable task scheduling out of the box.</p>
+            </div>
+            <div class="testimonial-card">
+                <div class="testimonial-icon">🎓</div>
+                <h3>Learning & Education</h3>
+                <p>Perfect for courses and tutorials with minimal setup overhead, letting students focus on learning Laravel instead of Docker configuration.</p>
+            </div>
+            <div class="testimonial-card">
+                <div class="testimonial-icon">🔬</div>
+                <h3>Testing & CI/CD</h3>
+                <p>Consistent environment for automated testing and continuous integration pipelines with reproducible results.</p>
+            </div>
+            <div class="testimonial-card">
+                <div class="testimonial-icon">⚡</div>
+                <h3>High-Performance Apps</h3>
+                <p>FrankenPHP and Octane integration provides significant performance gains for applications requiring fast response times.</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- CTA Section -->
+    <section class="cta">
+        <h2>Ready to Supercharge Your Laravel Development?</h2>
+        <p>Join developers who are building faster, more reliable Laravel applications with Laradox</p>
+        <div class="hero-buttons">
+            <a href="https://packagist.org/packages/adityarizqi/laradox" target="_blank" class="btn btn-primary">Install Now</a>
+            <a href="https://github.com/adityarizqi/laradox" target="_blank" class="btn btn-secondary" style="color: white;">Star on GitHub</a>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer>
+        <div class="footer-content">
+            <div class="footer-section">
+                <h3>Laradox</h3>
+                <p style="color: rgba(255, 255, 255, 0.7); margin-top: 1rem;">
+                    Plug-and-play Docker environment for Laravel with FrankenPHP, Nginx, and Octane support.
+                </p>
+                <div class="social-links">
+                    <a href="https://github.com/adityarizqi/laradox" target="_blank">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                            <path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z"/>
+                        </svg>
+                    </a>
+                    <a href="https://packagist.org/packages/adityarizqi/laradox" target="_blank">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                            <path d="M12 0c6.623 0 12 5.377 12 12s-5.377 12-12 12S0 18.623 0 12 5.377 0 12 0zm-1.29 15.81c.137.004.244-.033.35-.105.982-.658 1.33-1.024 1.774-1.832.396-.726.52-1.523.523-2.36.004-1.048-.43-1.97-1.216-2.538-.76-.55-1.714-.768-2.722-.576-1.228.234-2.194 1.07-2.533 2.18-.113.37-.154.74-.125 1.11.04.55.197 1.054.46 1.514.52.905 1.34 1.523 2.387 1.8.356.094.705.114 1.052.074-.046.206-.14.404-.312.56-.255.233-.59.316-.942.237-.42-.094-.767-.33-1.023-.678-.085-.116-.16-.24-.247-.353-.164-.215-.373-.376-.647-.42-.324-.052-.6.052-.822.29-.226.242-.293.55-.18.868.114.32.334.568.595.774.77.608 1.646.92 2.614.92.61 0 1.19-.114 1.748-.345 1.046-.434 1.826-1.186 2.288-2.22.31-.694.422-1.428.38-2.195-.053-.97-.374-1.835-.97-2.567-.805-.99-1.87-1.574-3.128-1.698-1.303-.128-2.498.24-3.52 1.086-1.018.842-1.626 1.94-1.77 3.217-.094.84.01 1.65.31 2.428.544 1.41 1.513 2.436 2.866 3.015.768.328 1.573.47 2.41.438zm9.45-9.84c-.06.173-.14.34-.232.5-.61 1.068-1.628 1.706-2.89 1.815-.62.054-1.222-.028-1.802-.24-.55-.202-1.015-.518-1.403-.945-.388-.426-.647-.93-.772-1.49-.125-.56-.106-1.122.054-1.67.16-.55.453-1.023.865-1.415.412-.392.898-.663 1.45-.81.55-.146 1.11-.157 1.67-.033.56.124 1.055.384 1.478.78.423.396.734.873.926 1.428.192.555.222 1.128.12 1.698-.102.57-.332 1.084-.674 1.54-.342.456-.774.815-1.29 1.074-.516.26-1.084.39-1.685.39-.6 0-1.17-.13-1.686-.39-.516-.26-.948-.618-1.29-1.074-.342-.456-.572-.97-.674-1.54-.102-.57-.072-1.143.12-1.698.192-.555.503-1.032.926-1.428.423-.396.918-.656 1.478-.78.56-.124 1.12-.113 1.67.033.55.147 1.038.418 1.45.81.412.392.705.865.865 1.415.16.548.18 1.11.054 1.67-.125.56-.384 1.064-.772 1.49-.388.427-.853.743-1.403.945-.58.212-1.182.294-1.802.24-1.262-.11-2.28-.747-2.89-1.815-.092-.16-.172-.327-.232-.5"/>
+                        </svg>
+                    </a>
+                </div>
+            </div>
+            <div class="footer-section">
+                <h3>Resources</h3>
+                <ul>
+                    <li><a href="https://github.com/adityarizqi/laradox#readme" target="_blank">Documentation</a></li>
+                    <li><a href="https://github.com/adityarizqi/laradox/blob/main/QUICKSTART.md" target="_blank">Quick Start Guide</a></li>
+                    <li><a href="https://github.com/adityarizqi/laradox/blob/main/CHANGELOG.md" target="_blank">Changelog</a></li>
+                    <li><a href="https://github.com/adityarizqi/laradox#troubleshooting" target="_blank">Troubleshooting</a></li>
+                </ul>
+            </div>
+            <div class="footer-section">
+                <h3>Community</h3>
+                <ul>
+                    <li><a href="https://github.com/adityarizqi/laradox" target="_blank">GitHub</a></li>
+                    <li><a href="https://github.com/adityarizqi/laradox/issues" target="_blank">Issues</a></li>
+                    <li><a href="https://github.com/adityarizqi/laradox/blob/main/CONTRIBUTING.md" target="_blank">Contributing</a></li>
+                    <li><a href="https://packagist.org/packages/adityarizqi/laradox" target="_blank">Packagist</a></li>
+                </ul>
+            </div>
+            <div class="footer-section">
+                <h3>About</h3>
+                <ul>
+                    <li><a href="https://github.com/adityarizqi" target="_blank">Author</a></li>
+                    <li><a href="https://github.com/adityarizqi/laradox/blob/main/LICENSE" target="_blank">License (MIT)</a></li>
+                    <li><a href="https://laravel.com/docs/octane" target="_blank">Laravel Octane</a></li>
+                    <li><a href="https://frankenphp.dev/" target="_blank">FrankenPHP</a></li>
+                </ul>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <p>&copy; 2025 Laradox. Created by <a href="https://github.com/adityarizqi" target="_blank" style="color: var(--primary);">Aditya Rizqi Januarta</a>. Licensed under MIT.</p>
+        </div>
+    </footer>
+
+    <script>
+        // Copy code functionality
+        function copyCode(button) {
+            const codeBlock = button.nextElementSibling;
+            const code = codeBlock.textContent;
+            
+            navigator.clipboard.writeText(code).then(() => {
+                const originalText = button.textContent;
+                button.textContent = 'Copied!';
+                setTimeout(() => {
+                    button.textContent = originalText;
+                }, 2000);
+            });
+        }
+
+        // Smooth scrolling for anchor links
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                const target = document.querySelector(this.getAttribute('href'));
+                if (target) {
+                    target.scrollIntoView({
+                        behavior: 'smooth',
+                        block: 'start'
+                    });
+                }
+            });
+        });
+
+        // Header scroll effect
+        let lastScroll = 0;
+        window.addEventListener('scroll', () => {
+            const header = document.querySelector('header');
+            const currentScroll = window.pageYOffset;
+            
+            if (currentScroll > 100) {
+                header.style.boxShadow = '0 2px 20px rgba(0, 0, 0, 0.1)';
+            } else {
+                header.style.boxShadow = '0 2px 10px rgba(0, 0, 0, 0.05)';
+            }
+            
+            lastScroll = currentScroll;
+        });
+
+        // Animate elements on scroll
+        const observerOptions = {
+            threshold: 0.1,
+            rootMargin: '0px 0px -100px 0px'
+        };
+
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('animate-in');
+                }
+            });
+        }, observerOptions);
+
+        document.querySelectorAll('.feature-card, .stat-card, .step, .testimonial-card').forEach(el => {
+            observer.observe(el);
+        });
+    </script>
+</body>
+</html>
