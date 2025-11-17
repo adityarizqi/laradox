@@ -26,7 +26,7 @@ Comparison of performance measurements between *without* and *with* FrankenPHP u
 ## Requirements
 
 - PHP 8.2 or higher
-- Laravel 10.x or 11.x
+- Laravel 10.x or higher
 - Docker and Docker Compose
 - [mkcert](https://github.com/FiloSottile/mkcert) (for SSL certificates)
 
