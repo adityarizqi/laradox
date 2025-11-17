@@ -178,29 +178,6 @@ The helper scripts allow running commands inside containers without entering the
 
 These scripts use the development Docker Compose file by default.
 
-## Customization
-
-After publishing, you can customize:
-- Docker Compose files for additional services
-- Nginx configuration for custom domains or SSL settings
-- PHP Dockerfile for additional extensions
-- Supervisor configuration for queue workers
-- Cron schedule for Laravel scheduler
-
-## Repository Publishing
-
-To publish this package to Packagist:
-
-1. Create a GitHub repository named `laradox`
-2. Push this code to the repository
-3. Create a release/tag (e.g., `v1.0.0`)
-4. Submit the package to [Packagist.org](https://packagist.org)
-
-Then users can install it with:
-```bash
-composer require adityarizqi/laradox --dev
-```
-
 ## License
 
 MIT License - see LICENSE file for details.
