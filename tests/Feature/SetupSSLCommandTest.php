@@ -3,9 +3,9 @@
 namespace Laradox\Tests\Feature;
 
 use Illuminate\Support\Facades\File;
-use Laradox\Tests\TestCase;
+use Laradox\Tests\FeatureTestCase;
 
-class SetupSSLCommandTest extends TestCase
+class SetupSSLCommandTest extends FeatureTestCase
 {
     /** @test */
     public function it_displays_setup_message(): void

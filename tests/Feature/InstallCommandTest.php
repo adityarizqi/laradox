@@ -3,9 +3,9 @@
 namespace Laradox\Tests\Feature;
 
 use Illuminate\Support\Facades\File;
-use Laradox\Tests\TestCase;
+use Laradox\Tests\FeatureTestCase;
 
-class InstallCommandTest extends TestCase
+class InstallCommandTest extends FeatureTestCase
 {
     /** @test */
     public function it_can_install_laradox(): void

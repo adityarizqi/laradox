@@ -2,9 +2,9 @@
 
 namespace Laradox\Tests\Feature;
 
-use Laradox\Tests\TestCase;
+use Laradox\Tests\FeatureTestCase;
 
-class ConfigurationTest extends TestCase
+class ConfigurationTest extends FeatureTestCase
 {
     /** @test */
     public function it_has_default_domain_configuration(): void

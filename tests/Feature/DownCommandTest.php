@@ -3,9 +3,9 @@
 namespace Laradox\Tests\Feature;
 
 use Illuminate\Support\Facades\File;
-use Laradox\Tests\TestCase;
+use Laradox\Tests\FeatureTestCase;
 
-class DownCommandTest extends TestCase
+class DownCommandTest extends FeatureTestCase
 {
     /** @test */
     public function it_fails_when_docker_compose_file_not_found(): void

@@ -9,20 +9,6 @@ use Orchestra\Testbench\TestCase as Orchestra;
 
 abstract class TestCase extends Orchestra
 {
-    protected function setUp(): void
-    {
-        parent::setUp();
-
-        // Clean up test artifacts
-        $this->cleanupTestFiles();
-    }
-
-    protected function tearDown(): void
-    {
-        $this->cleanupTestFiles();
-        parent::tearDown();
-    }
-
     /**
      * Get package providers.
      *
@@ -52,32 +38,6 @@ abstract class TestCase extends Orchestra
         ]);
         $app['config']->set('laradox.ssl.cert_path', base_path('docker/nginx/ssl/cert.pem'));
         $app['config']->set('laradox.ssl.key_path', base_path('docker/nginx/ssl/key.pem'));
-    }
-
-    /**
-     * Clean up test files.
-     */
-    protected function cleanupTestFiles(): void
-    {
-        $filesToClean = [
-            base_path('docker'),
-            base_path('composer'),
-            base_path('npm'),
-            base_path('php'),
-            base_path('docker-compose.development.yml'),
-            base_path('docker-compose.production.yml'),
-            config_path('laradox.php'),
-        ];
-
-        foreach ($filesToClean as $file) {
-            if (File::exists($file)) {
-                if (File::isDirectory($file)) {
-                    File::deleteDirectory($file);
-                } else {
-                    File::delete($file);
-                }
-            }
-        }
     }
 
     /**
