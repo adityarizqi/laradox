@@ -156,7 +156,7 @@ php artisan vendor:publish --tag=laradox
 
 2. Start containers:
    ```bash
-   php artisan laradox:up --env=production --build --detach
+   php artisan laradox:up --environment=production --build --detach
    ```
 
 3. The production setup includes:

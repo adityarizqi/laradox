@@ -95,7 +95,7 @@ docker compose -f docker-compose.development.yml logs -f
 
 2. Start production containers:
    ```bash
-   php artisan laradox:up --env=production --build --detach
+   php artisan laradox:up --environment=production --build --detach
    ```
 
 ## Troubleshooting
@@ -142,9 +142,7 @@ php artisan laradox:setup-ssl
    php artisan laradox:setup-ssl --domain=myapp.test
    ```
 
-3. Edit `docker/nginx/conf.d/app.conf` and replace `laravel.docker.localhost` with `myapp.test`
-
-4. Add to `/etc/hosts`:
+3. Add to `/etc/hosts`:
    ```
    127.0.0.1 myapp.test
    ```

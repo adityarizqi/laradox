@@ -94,7 +94,7 @@ docker compose -f docker-compose.development.yml up -d
 **Production:**
 
 ```bash
-php artisan laradox:up --env=production --detach
+php artisan laradox:up --environment=production --detach
 ```
 
 ### Step 6: Install Dependencies
@@ -128,10 +128,10 @@ php artisan laradox:install [--force]
 php artisan laradox:setup-ssl [--domain=example.com]
 
 # Start containers
-php artisan laradox:up [--env=development] [--detach] [--build]
+php artisan laradox:up [--environment=development] [--detach] [--build]
 
 # Stop containers
-php artisan laradox:down [--env=development] [--volumes]
+php artisan laradox:down [--environment=development] [--volumes]
 ```
 
 ### Helper Scripts
