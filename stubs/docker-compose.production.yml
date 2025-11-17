@@ -24,6 +24,8 @@ services:
     ports:
       - "80:80"
       - "443:443"
+    environment:
+      - LARADOX_DOMAIN=${LARADOX_DOMAIN:-laravel.docker.localhost}
     volumes:
       - ./docker/nginx/nginx.conf:/etc/nginx/nginx.conf:ro
       - ./docker/nginx/conf.d/app.conf:/etc/nginx/templates/app.conf.template
@@ -40,6 +42,16 @@ services:
     <<: [*php, *logging]
     environment:
       - SERVER_NAME=:8080
+
+  node:
+    <<: *logging
+    image: node:22-alpine
+    user: node
+    working_dir: /srv
+    entrypoint: ["tail", "-f", "/dev/null"]
+    volumes:
+      - .:/srv
+      - ./node_modules:/srv/node_modules
 
   scheduler:
     <<: [*php, *logging]

@@ -1,0 +1,6 @@
+#!/usr/bin/env sh
+
+# Detect environment from .env file or default to development
+ENV=$(grep -E '^LARADOX_ENV=' .env 2>/dev/null | cut -d '=' -f2 | tr -d '"' | tr -d "'" || echo "development")
+
+docker compose -f docker-compose.${ENV}.yml exec -u node node npm "$@"
