@@ -48,7 +48,7 @@ laradox/
 ### 1. Install via Composer
 
 ```bash
-composer require laradox/laradox --dev
+composer require adityarizqi/laradox --dev
 ```
 
 ### 2. Run Installation Command
@@ -198,7 +198,7 @@ To publish this package to Packagist:
 
 Then users can install it with:
 ```bash
-composer require laradox/laradox --dev
+composer require adityarizqi/laradox --dev
 ```
 
 ## License

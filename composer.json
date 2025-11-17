@@ -1,5 +1,5 @@
 {
-    "name": "laradox/laradox",
+    "name": "adityarizqi/laradox",
     "description": "Plug-and-play Docker environment for Laravel with FrankenPHP, Nginx, and Octane support",
     "type": "library",
     "keywords": [

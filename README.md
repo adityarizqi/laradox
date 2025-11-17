@@ -35,7 +35,7 @@ Comparison of performance measurements between *without* and *with* FrankenPHP u
 ### Step 1: Install via Composer
 
 ```bash
-composer require laradox/laradox --dev
+composer require adityarizqi/laradox --dev
 ```
 
 ### Step 2: Install Laravel Octane

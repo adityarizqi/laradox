@@ -13,7 +13,7 @@ Get your Laravel application running with Docker in less than 5 minutes!
 ### 1. Install Laradox
 
 ```bash
-composer require laradox/laradox --dev
+composer require adityarizqi/laradox --dev
 ```
 
 ### 2. Install Laravel Octane
