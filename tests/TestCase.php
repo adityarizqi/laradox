@@ -10,6 +10,14 @@ use Orchestra\Testbench\TestCase as Orchestra;
 abstract class TestCase extends Orchestra
 {
     /**
+     * Setup the test environment.
+     */
+    protected function setUp(): void
+    {
+        parent::setUp();
+    }
+
+    /**
      * Get package providers.
      *
      * @param  Application  $app

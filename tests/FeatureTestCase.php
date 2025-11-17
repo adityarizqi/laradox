@@ -9,6 +9,14 @@ abstract class FeatureTestCase extends TestCase
     /**
      * Setup the test environment.
      */
+    protected function setUp(): void
+    {
+        parent::setUp();
+    }
+
+    /**
+     * Setup the test environment.
+     */
     protected function tearDown(): void
     {
         // Clean up test artifacts after each test
