@@ -55,7 +55,6 @@ abstract class TestCase extends Orchestra
     {
         $path = base_path("docker-compose.{$env}.yml");
         $content = <<<YAML
-version: '3.8'
 services:
   app:
     image: php:8.4
