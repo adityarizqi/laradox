@@ -27,6 +27,12 @@ services:
       - ./docker/nginx/ssl:/etc/nginx/ssl:ro
     depends_on:
       - php
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:80/"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
 
   node:
     image: node:22-alpine
@@ -36,16 +42,40 @@ services:
     volumes:
       - .:/srv
       - ./node_modules:/srv/node_modules
+    healthcheck:
+      test: ["CMD", "node", "--version"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 5s
 
   php:
     <<: *php
     environment:
       - SERVER_NAME=:8080
+    healthcheck:
+      test: ["CMD", "php", "-v"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
 
   scheduler:
     <<: *php
     command: php artisan schedule:work
+    healthcheck:
+      test: ["CMD", "pgrep", "-f", "artisan schedule:work"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
 
   queue:
     <<: *php
     command: php artisan queue:work --timeout=0
+    healthcheck:
+      test: ["CMD", "pgrep", "-f", "artisan queue:work"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 10s

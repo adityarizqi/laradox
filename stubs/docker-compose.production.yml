@@ -33,15 +33,22 @@ services:
     depends_on:
       - php
     healthcheck:
-      test: ["CMD", "nginx", "-t"]
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:80/"]
       interval: 30s
       timeout: 10s
       retries: 3
+      start_period: 10s
 
   php:
     <<: [*php, *logging]
     environment:
       - SERVER_NAME=:8080
+    healthcheck:
+      test: ["CMD", "php", "-v"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
 
   node:
     <<: *logging
@@ -52,12 +59,22 @@ services:
     volumes:
       - .:/srv
       - ./node_modules:/srv/node_modules
+    healthcheck:
+      test: ["CMD", "node", "--version"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 5s
 
   scheduler:
     <<: [*php, *logging]
     command: supercronic /srv/docker/php/config/schedule.cron
     healthcheck:
-      disable: true
+      test: ["CMD", "pgrep", "-f", "supercronic"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
 
   queue:
     <<: [*php, *logging]
@@ -70,3 +87,4 @@ services:
       interval: 15s
       timeout: 5s
       retries: 3
+      start_period: 15s
