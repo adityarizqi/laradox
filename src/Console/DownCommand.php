@@ -12,8 +12,8 @@ class DownCommand extends Command
      * @var string
      */
     protected $signature = 'laradox:down 
-                            {--env=development : Environment (development|production)}
-                            {--v|volumes : Remove named volumes}';
+                            {--environment=development : Environment (development|production)}
+                            {--volumes : Remove named volumes}';
 
     /**
      * The console command description.
@@ -27,7 +27,7 @@ class DownCommand extends Command
      */
     public function handle(): int
     {
-        $env = $this->option('env');
+        $env = $this->option('environment');
         $composeFile = base_path("docker-compose.{$env}.yml");
 
         if (!file_exists($composeFile)) {

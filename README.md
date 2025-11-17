@@ -1,5 +1,9 @@
 # Laradox
 
+[![Tests](https://github.com/adityarizqi/laradox/workflows/Tests/badge.svg)](https://github.com/adityarizqi/laradox/actions)
+[![Latest Stable Version](https://poser.pugx.org/adityarizqi/laradox/v)](https://packagist.org/packages/adityarizqi/laradox)
+[![License](https://poser.pugx.org/adityarizqi/laradox/license)](https://packagist.org/packages/adityarizqi/laradox)
+
 > **Plug-and-play Docker environment for Laravel with FrankenPHP, Nginx, and Octane support**
 
 Laradox provides a production-ready Docker environment optimized for Laravel Octane with FrankenPHP. It's designed for both local development and production deployments, with automatic HTTPS support using mkcert.
@@ -315,6 +319,23 @@ Update `docker-compose.*.yml` files accordingly.
 ## License
 
 Laradox is open-sourced software licensed under the [MIT license](LICENSE).
+
+## Testing
+
+Laradox includes a comprehensive test suite with 47 tests covering all functionality.
+
+### Running Tests
+
+```bash
+# Run all tests
+composer test
+
+# Run with coverage report
+vendor/bin/phpunit --coverage-html build/coverage
+
+# Run specific test file
+vendor/bin/phpunit tests/Feature/InstallCommandTest.php
+```
 
 ## Credits
 

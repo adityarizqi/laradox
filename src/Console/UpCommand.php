@@ -12,7 +12,7 @@ class UpCommand extends Command
      * @var string
      */
     protected $signature = 'laradox:up 
-                            {--env=development : Environment (development|production)}
+                            {--environment=development : Environment (development|production)}
                             {--d|detach : Run in detached mode}
                             {--build : Build images before starting}';
 
@@ -28,7 +28,7 @@ class UpCommand extends Command
      */
     public function handle(): int
     {
-        $env = $this->option('env');
+        $env = $this->option('environment');
         $composeFile = base_path("docker-compose.{$env}.yml");
 
         if (!file_exists($composeFile)) {
