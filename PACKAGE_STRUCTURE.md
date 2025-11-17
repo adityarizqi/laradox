@@ -10,8 +10,14 @@ This document provides an overview of the Laradox package structure and how to u
 
 ```
 laradox/
+├── .github/
+│   └── workflows/
+│       └── tests.yml                        # GitHub Actions CI/CD
 ├── config/
 │   └── laradox.php                          # Configuration file
+├── docker/
+│   └── nginx/
+│       └── ssl/                             # SSL certificates
 ├── src/
 │   ├── Console/
 │   │   ├── DownCommand.php                  # Stop containers command
@@ -23,23 +29,40 @@ laradox/
 │   ├── docker/
 │   │   ├── nginx/                           # Nginx configuration files
 │   │   │   ├── nginx.conf
-│   │   │   ├── conf.d/app.conf
+│   │   │   ├── conf.d/
+│   │   │   │   └── app.conf
 │   │   │   └── ssl/
 │   │   └── php/                             # PHP/FrankenPHP configuration
 │   │       ├── php.dockerfile
 │   │       ├── supervisord.conf
 │   │       ├── laravel-worker.conf
-│   │       └── config/schedule.cron
+│   │       └── config/
+│   │           └── schedule.cron
 │   ├── docker-compose.development.yml       # Development Docker Compose
 │   ├── docker-compose.production.yml        # Production Docker Compose
 │   ├── composer                             # Composer helper script
 │   ├── npm                                  # NPM helper script
-│   └── php                                  # PHP/Artisan helper script
+│   ├── php                                  # PHP/Artisan helper script
+│   ├── node_modules/                        # Stub dependencies
+│   └── vendor/                              # Stub dependencies
+├── tests/
+│   ├── Feature/                             # Feature tests
+│   ├── Unit/                                # Unit tests
+│   ├── FeatureTestCase.php
+│   ├── TestCase.php
+│   └── README.md
+├── vendor/                                  # Composer dependencies
+├── .gitattributes
 ├── .gitignore
 ├── CHANGELOG.md
 ├── composer.json
+├── composer.lock
 ├── CONTRIBUTING.md
+├── index.html
 ├── LICENSE
+├── PACKAGE_STRUCTURE.md
+├── phpunit.xml
+├── QUICKSTART.md
 └── README.md
 ```
 
