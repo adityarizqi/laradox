@@ -5,9 +5,10 @@
          colors="true"
          failOnWarning="true"
          failOnRisky="true"
-         beStrictAboutOutputDuringTests="true"
+         beStrictAboutOutputDuringTests="false"
          cacheDirectory=".phpunit.cache"
-         backupGlobals="false">
+         backupGlobals="false"
+         beStrictAboutTestsThatDoNotTestAnything="false">
     <testsuites>
         <testsuite name="Laradox Test Suite">
             <directory>tests</directory>

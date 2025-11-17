@@ -55,11 +55,11 @@ abstract class TestCase extends Orchestra
     {
         $path = base_path("docker-compose.{$env}.yml");
         $content = <<<YAML
+# TEST FILE - DO NOT USE IN PRODUCTION
+# This file is for testing purposes only
 services:
-  app:
-    image: php:8.4
-    ports:
-      - "8080:8080"
+  test:
+    image: hello-world
 YAML;
 
         File::put($path, $content);
