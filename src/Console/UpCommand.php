@@ -25,7 +25,13 @@ class UpCommand extends Command
     protected $description = 'Start Laradox Docker containers';
 
     /**
-     * Execute the console command.
+     * Start or restart Laradox Docker containers using the selected environment, SSL settings, and command options.
+     *
+     * Determines the appropriate nginx configuration based on SSL presence and the --force-ssl option, copies that configuration,
+     * and then either starts containers with `docker compose up` (optionally building and/or detaching) or restarts running containers
+     * after optional user confirmation. May prompt the user for decisions when SSL is missing in development or when restarting.
+     *
+     * @return int Command exit status: `self::SUCCESS` on success, `self::FAILURE` on failure.
      */
     public function handle(): int
     {
@@ -113,7 +119,12 @@ class UpCommand extends Command
     }
 
     /**
-     * Determine which nginx configuration to use based on environment and SSL availability.
+     * Choose the nginx configuration file to use based on environment, SSL availability, and the force-ssl option.
+     *
+     * @param string $env The environment name, typically 'development' or 'production'.
+     * @param bool $sslExists True if both SSL certificate and key files exist at configured paths.
+     * @param string|null $forceSsl If provided, coerced to boolean: `"true"` requires HTTPS, `"false"` forces HTTP; `null` means auto-detect.
+     * @return string|false The chosen nginx config filename (`'app-https.conf'` or `'app-http.conf'`), or `false` when the operation is cancelled or required SSL prerequisites are missing.
      */
     protected function determineNginxConfig(string $env, bool $sslExists, ?string $forceSsl): string|false
     {
@@ -192,7 +203,12 @@ class UpCommand extends Command
     }
 
     /**
-     * Copy the appropriate nginx configuration file.
+     * Install the chosen nginx configuration into docker/nginx/conf.d/app.conf.
+     *
+     * If the named source file does not exist, the method warns and leaves the current
+     * configuration unchanged.
+     *
+     * @param string $configFile Filename of the nginx configuration to copy (e.g. `app-https.conf`).
      */
     protected function copyNginxConfig(string $configFile): void
     {
@@ -210,7 +226,10 @@ class UpCommand extends Command
     }
 
     /**
-     * Check if containers are already running.
+     * Determine whether any containers defined by the given Docker Compose file are currently running.
+     *
+     * @param string $composeFile Path to the Docker Compose file to check.
+     * @return bool `true` if one or more containers for the compose file are running, `false` otherwise.
      */
     protected function areContainersRunning(string $composeFile): bool
     {

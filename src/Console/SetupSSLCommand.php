@@ -24,7 +24,12 @@ class SetupSSLCommand extends Command
     protected $description = 'Generate SSL certificates using mkcert';
 
     /**
-     * Execute the console command.
+     * Generate SSL certificates for the configured domain(s) using mkcert.
+     *
+     * Creates the SSL directory if necessary, executes mkcert to produce the certificate and key files,
+     * and writes progress and error messages to the console. If mkcert is not available, emits guidance and exits with failure.
+     *
+     * @return int Exit status: `0` on success, non-zero on failure.
      */
     public function handle(): int
     {
