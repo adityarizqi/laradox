@@ -11,7 +11,8 @@ trait ChecksDocker
      */
     protected function checkDocker(): bool
     {
-        exec('docker --version 2>/dev/null', $output, $returnCode);
+        exec('docker --version', $output, $returnCode);
+        $output = $output ?? [];
         return $returnCode === 0;
     }
 
@@ -22,7 +23,8 @@ trait ChecksDocker
      */
     protected function checkDockerCompose(): bool
     {
-        exec('docker compose version 2>/dev/null', $output, $returnCode);
+        exec('docker compose version', $output, $returnCode);
+        $output = $output ?? [];
         return $returnCode === 0;
     }
 
@@ -75,7 +77,13 @@ trait ChecksDocker
     }
 
     /**
-     * Install Docker on Linux (Ubuntu/Debian).
+     * Install Docker on Linux.
+     *
+     * Detects the distribution and calls the appropriate installer.
+     * Supports Ubuntu, Debian, Fedora, and CentOS/RHEL.
+     *
+     * Note: Requires systemd for service management. On WSL, containers,
+     * or non-systemd distributions, manual installation may be needed.
      *
      * @return int
      */
@@ -90,6 +98,11 @@ trait ChecksDocker
         $hasDnf = $this->commandAvailable('dnf');
 
         if ($hasApt) {
+            // Detect if Debian or Ubuntu
+            $distro = $this->detectDebianDistribution();
+            if ($distro === 'debian') {
+                return $this->installDockerDebian();
+            }
             return $this->installDockerUbuntu();
         } elseif ($hasDnf) {
             return $this->installDockerFedora();
@@ -103,13 +116,13 @@ trait ChecksDocker
     }
 
     /**
-     * Install Docker on Ubuntu/Debian.
+     * Install Docker on Ubuntu.
      *
      * @return int
      */
     protected function installDockerUbuntu(): int
     {
-        $this->line('Installing Docker on Ubuntu/Debian...');
+        $this->line('Installing Docker on Ubuntu...');
         $this->newLine();
 
         $commands = [
@@ -130,9 +143,6 @@ trait ChecksDocker
             'sudo apt-get install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin',
             // Add current user to docker group
             'sudo usermod -aG docker $USER',
-            // Start Docker service
-            'sudo systemctl start docker',
-            'sudo systemctl enable docker',
         ];
 
         foreach ($commands as $command) {
@@ -145,8 +155,78 @@ trait ChecksDocker
             }
         }
 
+        // Start Docker service (may fail on WSL/containers)
+        $this->line('Starting Docker service...');
+        exec('sudo systemctl start docker 2>/dev/null', $output, $returnCode);
+        if ($returnCode === 0) {
+            exec('sudo systemctl enable docker 2>/dev/null');
+            $this->info('✓ Docker service started and enabled.');
+        } else {
+            $this->warn('⚠ Could not start Docker service (systemctl may not be available).');
+            $this->line('On WSL or containers, you may need to start Docker manually.');
+        }
+
         $this->newLine();
-        $this->info('✓ Docker installed successfully!');
+        $this->info('✓ Docker packages installed successfully!');
+        $this->warn('⚠ You may need to log out and back in for group changes to take effect.');
+        $this->newLine();
+
+        return 0; // SUCCESS
+    }
+
+    /**
+     * Install Docker on Debian.
+     *
+     * @return int
+     */
+    protected function installDockerDebian(): int
+    {
+        $this->line('Installing Docker on Debian...');
+        $this->newLine();
+
+        $commands = [
+            // Remove old versions
+            'sudo apt-get remove -y docker docker-engine docker.io containerd runc 2>/dev/null || true',
+            // Update packages
+            'sudo apt-get update',
+            // Install prerequisites
+            'sudo apt-get install -y ca-certificates curl',
+            // Add Docker's official GPG key
+            'sudo install -m 0755 -d /etc/apt/keyrings',
+            'sudo curl -fsSL https://download.docker.com/linux/debian/gpg -o /etc/apt/keyrings/docker.asc',
+            'sudo chmod a+r /etc/apt/keyrings/docker.asc',
+            // Set up repository
+            'echo "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.asc] https://download.docker.com/linux/debian $(. /etc/os-release && echo "$VERSION_CODENAME") stable" | sudo tee /etc/apt/sources.list.d/docker.list > /dev/null',
+            // Install Docker Engine
+            'sudo apt-get update',
+            'sudo apt-get install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin',
+            // Add current user to docker group
+            'sudo usermod -aG docker $USER',
+        ];
+
+        foreach ($commands as $command) {
+            $this->line("Running: {$command}");
+            passthru($command, $returnCode);
+            if ($returnCode !== 0 && !str_contains($command, 'remove')) {
+                $this->error('Installation failed.');
+                $this->line('Please try installing manually: https://docs.docker.com/engine/install/debian/');
+                return 1; // FAILURE
+            }
+        }
+
+        // Start Docker service (may fail on WSL/containers)
+        $this->line('Starting Docker service...');
+        exec('sudo systemctl start docker 2>/dev/null', $output, $returnCode);
+        if ($returnCode === 0) {
+            exec('sudo systemctl enable docker 2>/dev/null');
+            $this->info('✓ Docker service started and enabled.');
+        } else {
+            $this->warn('⚠ Could not start Docker service (systemctl may not be available).');
+            $this->line('On WSL or containers, you may need to start Docker manually.');
+        }
+
+        $this->newLine();
+        $this->info('✓ Docker packages installed successfully!');
         $this->warn('⚠ You may need to log out and back in for group changes to take effect.');
         $this->newLine();
 
@@ -174,9 +254,6 @@ trait ChecksDocker
             'sudo dnf install -y docker-ce docker-ce-cli containerd.io docker-compose-plugin',
             // Add current user to docker group
             'sudo usermod -aG docker $USER',
-            // Start Docker service
-            'sudo systemctl start docker',
-            'sudo systemctl enable docker',
         ];
 
         foreach ($commands as $command) {
@@ -189,8 +266,18 @@ trait ChecksDocker
             }
         }
 
+        // Start Docker service (may fail on containers)
+        $this->line('Starting Docker service...');
+        exec('sudo systemctl start docker 2>/dev/null', $output, $returnCode);
+        if ($returnCode === 0) {
+            exec('sudo systemctl enable docker 2>/dev/null');
+            $this->info('✓ Docker service started and enabled.');
+        } else {
+            $this->warn('⚠ Could not start Docker service (systemctl may not be available).');
+        }
+
         $this->newLine();
-        $this->info('✓ Docker installed successfully!');
+        $this->info('✓ Docker packages installed successfully!');
         $this->warn('⚠ You may need to log out and back in for group changes to take effect.');
         $this->newLine();
 
@@ -218,9 +305,6 @@ trait ChecksDocker
             'sudo yum install -y docker-ce docker-ce-cli containerd.io docker-compose-plugin',
             // Add current user to docker group
             'sudo usermod -aG docker $USER',
-            // Start Docker service
-            'sudo systemctl start docker',
-            'sudo systemctl enable docker',
         ];
 
         foreach ($commands as $command) {
@@ -233,12 +317,57 @@ trait ChecksDocker
             }
         }
 
+        // Start Docker service (may fail on containers)
+        $this->line('Starting Docker service...');
+        exec('sudo systemctl start docker 2>/dev/null', $output, $returnCode);
+        if ($returnCode === 0) {
+            exec('sudo systemctl enable docker 2>/dev/null');
+            $this->info('✓ Docker service started and enabled.');
+        } else {
+            $this->warn('⚠ Could not start Docker service (systemctl may not be available).');
+        }
+
         $this->newLine();
-        $this->info('✓ Docker installed successfully!');
+        $this->info('✓ Docker packages installed successfully!');
         $this->warn('⚠ You may need to log out and back in for group changes to take effect.');
         $this->newLine();
 
         return 0; // SUCCESS
+    }
+
+    /**
+     * Detect if the system is Debian or Ubuntu.
+     *
+     * @return string 'debian', 'ubuntu', or 'unknown'
+     */
+    protected function detectDebianDistribution(): string
+    {
+        // Check /etc/os-release for ID field
+        if (file_exists('/etc/os-release')) {
+            $osRelease = file_get_contents('/etc/os-release');
+            if (preg_match('/^ID=(.*)$/m', $osRelease, $matches)) {
+                $id = trim($matches[1], '"');
+                if ($id === 'debian') {
+                    return 'debian';
+                } elseif ($id === 'ubuntu') {
+                    return 'ubuntu';
+                }
+            }
+        }
+
+        // Fallback: check for lsb_release command
+        exec('lsb_release -is 2>/dev/null', $output, $returnCode);
+        if ($returnCode === 0 && !empty($output)) {
+            $distro = strtolower(trim($output[0]));
+            if ($distro === 'debian') {
+                return 'debian';
+            } elseif ($distro === 'ubuntu') {
+                return 'ubuntu';
+            }
+        }
+
+        // Default to Ubuntu if cannot determine
+        return 'ubuntu';
     }
 
     /**
@@ -269,7 +398,8 @@ trait ChecksDocker
      */
     protected function commandAvailable(string $command): bool
     {
-        exec("which {$command} 2>/dev/null", $output, $returnCode);
+        exec('which ' . escapeshellarg($command), $output, $returnCode);
+        unset($output);
         return $returnCode === 0;
     }
 
