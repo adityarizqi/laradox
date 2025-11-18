@@ -54,6 +54,33 @@ class UpCommand extends Command
         // Copy the appropriate nginx config
         $this->copyNginxConfig($nginxConfigSource);
 
+        // Check if containers are already running
+        if ($this->areContainersRunning($composeFile)) {
+            $this->newLine();
+            $this->warn('⚠ Containers are already running!');
+            $this->line('Use "php artisan laradox:down" to stop them first, or restart with "docker compose restart"');
+            $this->newLine();
+            
+            if (!$this->confirm('Do you want to restart the containers?', false)) {
+                $this->info('Cancelled.');
+                return self::SUCCESS;
+            }
+            
+            $this->info('Restarting containers...');
+            $restartCommand = sprintf('docker compose -f %s restart', escapeshellarg($composeFile));
+            passthru($restartCommand, $returnCode);
+            
+            if ($returnCode === 0) {
+                $this->newLine();
+                $this->info('✓ Containers restarted successfully!');
+                $domain = config('laradox.domain');
+                $protocol = $sslExists && $forceSsl !== 'false' ? 'https' : 'http';
+                $this->line("Visit: {$protocol}://{$domain}");
+            }
+            
+            return $returnCode === 0 ? self::SUCCESS : self::FAILURE;
+        }
+
         $this->info("Starting Laradox ({$env} environment)...");
 
         $command = sprintf(
@@ -180,5 +207,21 @@ class UpCommand extends Command
 
         copy($sourcePath, $targetPath);
         $this->line("Using nginx configuration: {$configFile}");
+    }
+
+    /**
+     * Check if containers are already running.
+     */
+    protected function areContainersRunning(string $composeFile): bool
+    {
+        $command = sprintf(
+            'docker compose -f %s ps --quiet 2>/dev/null',
+            escapeshellarg($composeFile)
+        );
+
+        exec($command, $output, $returnCode);
+
+        // If command succeeds and has output, containers exist
+        return $returnCode === 0 && !empty($output);
     }
 }
