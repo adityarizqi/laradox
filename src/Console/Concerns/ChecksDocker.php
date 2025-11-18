@@ -292,5 +292,4 @@ trait ChecksDocker
             exec('start "" ' . escapeshellarg($url));
         }
     }
-    }
 }
