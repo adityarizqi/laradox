@@ -2,7 +2,7 @@
 
 All notable changes to `laradox` will be documented in this file.
 
-## [Unreleased] - 2.0.3
+## 2.0.3 - 2025-11-19
 
 ### Added
 - Automatic Docker detection with installation prompts for missing Docker/Docker Compose
