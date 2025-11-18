@@ -78,7 +78,8 @@ class UpCommand extends Command
             $this->newLine();
             $this->info('✓ Containers started successfully!');
             $domain = config('laradox.domain');
-            $this->line("Visit: https://{$domain}");
+            $protocol = $sslExists && $forceSsl !== 'false' ? 'https' : 'http';
+            $this->line("Visit: {$protocol}://{$domain}");
         }
 
         return $returnCode === 0 ? self::SUCCESS : self::FAILURE;
