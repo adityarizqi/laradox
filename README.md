@@ -79,11 +79,16 @@ Or manually:
 mkcert -install -cert-file ./docker/nginx/ssl/cert.pem -key-file ./docker/nginx/ssl/key.pem "*.docker.localhost" docker.localhost
 ```
 
-> **Development**: SSL is optional. You can run with HTTP only (port 80). Self-signed certificates are created automatically during installation, but browsers will show security warnings.
+> **Development**: SSL is optional. You can run with HTTP only (port 80) without any certificates. Laradox will automatically use HTTP-only configuration.
 
 **For Production (Required):**
 
 SSL certificates are **mandatory** for production environments. The `laradox:up` command will refuse to start production containers without valid SSL certificates.
+
+```bash
+php artisan laradox:setup-ssl
+# Or use --force-ssl=false to bypass (not recommended)
+```
 
 > **Windows WSL2 Users**: Run the mkcert command on the Windows side to install certificates in your Windows trust store.
 
@@ -137,12 +142,28 @@ php artisan laradox:install [--force]
 # Setup SSL certificates
 php artisan laradox:setup-ssl [--domain=example.com]
 
-# Start containers
+# Start containers (auto-detects SSL)
 php artisan laradox:up [--environment=development] [--detach] [--build]
+
+# Force HTTPS (requires SSL certificates)
+php artisan laradox:up --force-ssl=true [--detach]
+
+# Force HTTP only (no SSL)
+php artisan laradox:up --force-ssl=false [--detach]
 
 # Stop containers
 php artisan laradox:down [--environment=development] [--volumes]
 ```
+
+#### SSL Configuration Options
+
+The `--force-ssl` flag controls SSL behavior:
+
+- **Not specified (default)**: Auto-detects SSL certificates
+  - Development: Prompts if missing, allows HTTP-only
+  - Production: Requires SSL, fails if missing
+- **`--force-ssl=true`**: Forces HTTPS, requires valid certificates
+- **`--force-ssl=false`**: Forces HTTP-only, ignores certificates
 
 ### Helper Scripts
 
@@ -189,13 +210,23 @@ docker compose -f docker-compose.development.yml restart php
 
 ### Nginx Configuration
 
-Laradox automatically uses the appropriate nginx configuration based on your environment:
+Laradox automatically uses the appropriate nginx configuration based on your environment and SSL availability:
 
-- **Development with SSL**: Uses `app-https.conf` (HTTPS with HTTP→HTTPS redirect)
-- **Development without SSL**: Uses `app-http.conf` (HTTP only on port 80)
-- **Production**: Always requires SSL and uses `app-https.conf`
+**Configuration Files:**
+- `app-http.conf` - HTTP-only configuration (port 80)
+- `app-https.conf` - HTTPS configuration with HTTP→HTTPS redirect
+- `app.conf` - Active configuration (auto-generated)
 
-The configuration is automatically selected when you run `php artisan laradox:up`.
+**Automatic Selection:**
+- **Development with SSL**: Uses `app-https.conf` (HTTPS enabled)
+- **Development without SSL**: Prompts user, uses `app-http.conf` (HTTP-only)
+- **Production**: Requires SSL, always uses `app-https.conf`
+- **`--force-ssl=true`**: Always uses `app-https.conf`, fails if no certificates
+- **`--force-ssl=false`**: Always uses `app-http.conf`, ignores certificates
+
+The configuration is automatically selected and copied when you run `php artisan laradox:up`.
+
+> **Note**: You don't need to manually edit nginx configuration files. Laradox handles this automatically.
 
 ### Environment Variables
 
@@ -336,13 +367,30 @@ LARADOX_HTTPS_PORT=8443
 
 Update `docker-compose.*.yml` files accordingly.
 
+### Containers Already Running
+
+Laradox automatically detects if containers are already running and offers to restart them:
+
+```bash
+php artisan laradox:up
+# Output: "⚠ Containers are already running!"
+# Prompt: "Do you want to restart the containers?"
+```
+
+Or manually stop and start:
+
+```bash
+php artisan laradox:down
+php artisan laradox:up --detach
+```
+
 ## License
 
 Laradox is open-sourced software licensed under the [MIT license](LICENSE).
 
 ## Testing
 
-Laradox includes a comprehensive test suite with 47 tests covering all functionality.
+Laradox includes a comprehensive test suite with 53 tests covering all functionality.
 
 ### Running Tests
 
