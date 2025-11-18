@@ -12,7 +12,8 @@ class SetupSSLCommandTest extends FeatureTestCase
     public function it_displays_setup_message(): void
     {
         $this->artisan('laradox:setup-ssl')
-            ->expectsOutput('Setting up SSL certificates...');
+            ->expectsOutput('Setting up SSL certificates...')
+            ->assertSuccessful();
     }
 
     #[Test]
