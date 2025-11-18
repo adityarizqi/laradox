@@ -132,9 +132,19 @@ class SetupSSLCommandTest extends FeatureTestCase
     {
         // This test only runs meaningfully if mkcert is not installed
         // When mkcert is installed, the command succeeds without warnings
-        $exitCode = $this->artisan('laradox:setup-ssl')
-            ->expectsOutput('Setting up SSL certificates...')
-            ->run();
+        $command = $this->artisan('laradox:setup-ssl')
+            ->expectsOutput('Setting up SSL certificates...');
+        
+        // Handle potential confirmation prompts if mkcert is not installed
+        try {
+            $exitCode = $command->run();
+        } catch (\Mockery\Exception\BadMethodCallException $e) {
+            // If we get the askQuestion exception, run with expectations
+            $exitCode = $this->artisan('laradox:setup-ssl')
+                ->expectsOutput('Setting up SSL certificates...')
+                ->expectsConfirmation('Would you like to install mkcert automatically?', 'no')
+                ->run();
+        }
         
         // Accept either exit code
         $this->assertContains($exitCode, [0, 1]);
@@ -146,7 +156,17 @@ class SetupSSLCommandTest extends FeatureTestCase
         // This test verifies the command handles different scenarios gracefully
         // If mkcert is installed, command succeeds (0)
         // If not installed and user declines/auto-install fails, returns failure (1)
-        $exitCode = $this->artisan('laradox:setup-ssl')->run();
+        $command = $this->artisan('laradox:setup-ssl');
+        
+        // Handle potential confirmation prompts if mkcert is not installed
+        try {
+            $exitCode = $command->run();
+        } catch (\Mockery\Exception\BadMethodCallException $e) {
+            // If we get the askQuestion exception, run with expectations
+            $exitCode = $this->artisan('laradox:setup-ssl')
+                ->expectsConfirmation('Would you like to install mkcert automatically?', 'no')
+                ->run();
+        }
         
         $this->assertContains($exitCode, [0, 1]);
     }
@@ -157,7 +177,17 @@ class SetupSSLCommandTest extends FeatureTestCase
         // When mkcert is missing, command should provide helpful output
         // When mkcert is present, command generates certificates
         // Command should handle both scenarios gracefully
-        $exitCode = $this->artisan('laradox:setup-ssl')->run();
+        $command = $this->artisan('laradox:setup-ssl');
+        
+        // Handle potential confirmation prompts if mkcert is not installed
+        try {
+            $exitCode = $command->run();
+        } catch (\Mockery\Exception\BadMethodCallException $e) {
+            // If we get the askQuestion exception, run with expectations
+            $exitCode = $this->artisan('laradox:setup-ssl')
+                ->expectsConfirmation('Would you like to install mkcert automatically?', 'no')
+                ->run();
+        }
         
         $this->assertContains($exitCode, [0, 1]);
     }
@@ -181,7 +211,17 @@ class SetupSSLCommandTest extends FeatureTestCase
         // Verify that the command can detect the current OS
         // This is implicitly tested when running the command
         // OS detection should not cause the command to crash
-        $exitCode = $this->artisan('laradox:setup-ssl')->run();
+        $command = $this->artisan('laradox:setup-ssl');
+        
+        // Handle potential confirmation prompts if mkcert is not installed
+        try {
+            $exitCode = $command->run();
+        } catch (\Mockery\Exception\BadMethodCallException $e) {
+            // If we get the askQuestion exception, run with expectations
+            $exitCode = $this->artisan('laradox:setup-ssl')
+                ->expectsConfirmation('Would you like to install mkcert automatically?', 'no')
+                ->run();
+        }
         
         $this->assertContains($exitCode, [0, 1]);
     }
@@ -192,7 +232,18 @@ class SetupSSLCommandTest extends FeatureTestCase
         // On Windows, the command should provide download instructions
         // On other OS, it works normally
         // This test ensures the command doesn't crash regardless of OS
-        $exitCode = $this->artisan('laradox:setup-ssl')->run();
+        $command = $this->artisan('laradox:setup-ssl');
+        
+        // Handle potential confirmation prompts if mkcert is not installed
+        try {
+            $exitCode = $command->run();
+        } catch (\Mockery\Exception\BadMethodCallException $e) {
+            // If we get the askQuestion exception, run with expectations
+            // The specific prompt depends on OS
+            $exitCode = $this->artisan('laradox:setup-ssl')
+                ->expectsConfirmation('Would you like to install mkcert automatically?', 'no')
+                ->run();
+        }
         
         $this->assertContains($exitCode, [0, 1]);
     }
@@ -203,7 +254,17 @@ class SetupSSLCommandTest extends FeatureTestCase
         // On Linux, the command should detect package managers
         // This test ensures the Linux flow doesn't crash
         // Accepts both success (mkcert installed) and failure (not installed, declined)
-        $exitCode = $this->artisan('laradox:setup-ssl')->run();
+        $command = $this->artisan('laradox:setup-ssl');
+        
+        // Handle potential confirmation prompts if mkcert is not installed
+        try {
+            $exitCode = $command->run();
+        } catch (\Mockery\Exception\BadMethodCallException $e) {
+            // If we get the askQuestion exception, run with expectations
+            $exitCode = $this->artisan('laradox:setup-ssl')
+                ->expectsConfirmation('Would you like to install mkcert automatically?', 'no')
+                ->run();
+        }
         
         $this->assertContains($exitCode, [0, 1]);
     }
@@ -214,7 +275,18 @@ class SetupSSLCommandTest extends FeatureTestCase
         // On macOS, the command should check for Homebrew
         // This test ensures the macOS flow doesn't crash
         // Accepts both success (mkcert installed) and failure (not installed, declined)
-        $exitCode = $this->artisan('laradox:setup-ssl')->run();
+        $command = $this->artisan('laradox:setup-ssl');
+        
+        // Handle potential confirmation prompts if mkcert is not installed
+        try {
+            $exitCode = $command->run();
+        } catch (\Mockery\Exception\BadMethodCallException $e) {
+            // If we get the askQuestion exception, run with expectations
+            // On macOS, it asks about Homebrew installation
+            $exitCode = $this->artisan('laradox:setup-ssl')
+                ->expectsConfirmation('Would you like to install mkcert using Homebrew?', 'no')
+                ->run();
+        }
         
         $this->assertContains($exitCode, [0, 1]);
     }
