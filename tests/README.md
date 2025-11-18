@@ -24,36 +24,6 @@ Run with coverage:
 vendor/bin/phpunit --coverage-html build/coverage
 ```
 
-## Test Structure
-
-### Unit Tests (`tests/Unit/`)
-- `LaradoxServiceProviderTest.php` - Tests for the service provider registration and configuration
-
-### Feature Tests (`tests/Feature/`)
-- `InstallCommandTest.php` - Tests for the `laradox:install` command
-- `UpCommandTest.php` - Tests for the `laradox:up` command
-- `DownCommandTest.php` - Tests for the `laradox:down` command
-- `SetupSSLCommandTest.php` - Tests for the `laradox:setup-ssl` command
-- `ConfigurationTest.php` - Tests for configuration values and environment overrides
-
-## Test Coverage
-
-The test suite covers:
-- ✅ Service provider registration and bootstrapping
-- ✅ Command registration and availability
-- ✅ Configuration merging and publishing
-- ✅ File and directory creation
-- ✅ Script permissions and execution
-- ✅ Docker Compose file handling
-- ✅ SSL certificate setup and validation
-- ✅ SSL optional for development environments
-- ✅ SSL requirement enforcement for production
-- ✅ Automatic nginx configuration selection (HTTP/HTTPS)
-- ✅ `--force-ssl` flag behavior (true/false/auto-detect)
-- ✅ Environment variable overrides
-- ✅ Error handling and validation
-- ✅ Interactive prompts and user confirmations
-
 ## Writing New Tests
 
 1. Extend the `Laradox\Tests\TestCase` class
