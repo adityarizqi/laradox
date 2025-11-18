@@ -2,6 +2,27 @@
 
 This directory contains the test suite for the Laradox package.
 
+## Test Structure
+
+Laradox includes a comprehensive test suite organized into two main categories:
+
+### Feature Tests
+End-to-end tests for complete command functionality:
+- `ConfigurationTest.php` - Configuration loading and validation
+- `InstallCommandTest.php` - Package installation workflow
+- `SetupSSLCommandTest.php` - SSL certificate generation
+- `UpCommandTest.php` - Container startup with Docker/SSL detection
+- `DownCommandTest.php` - Container shutdown
+
+### Unit Tests
+Focused tests for individual command components:
+- `InstallCommandTest.php` - Command signature, options, and file operations
+- `UpCommandTest.php` - Command construction, SSL handling, and protocol detection
+- `DownCommandTest.php` - Command validation and environment handling
+- `LaradoxServiceProviderTest.php` - Service provider registration
+- `DockerCheckTest.php` - Docker detection, OS detection, and installation prompts
+- `SetupSSLCommandTest.php` - mkcert detection and SSL generation
+
 ## Running Tests
 
 Run all tests:
@@ -14,9 +35,29 @@ Or using PHPUnit directly:
 vendor/bin/phpunit
 ```
 
-Run specific test suites:
+Run specific test directories:
 ```bash
-vendor/bin/phpunit --testsuite="Laradox Test Suite"
+# Run all feature tests
+vendor/bin/phpunit tests/Feature/
+
+# Run all unit tests
+vendor/bin/phpunit tests/Unit/
+```
+
+Run specific test files:
+```bash
+# Feature tests
+vendor/bin/phpunit tests/Feature/InstallCommandTest.php
+vendor/bin/phpunit tests/Feature/UpCommandTest.php
+
+# Unit tests
+vendor/bin/phpunit tests/Unit/InstallCommandTest.php
+vendor/bin/phpunit tests/Unit/DockerCheckTest.php
+```
+
+Run with test output details:
+```bash
+vendor/bin/phpunit --testdox
 ```
 
 Run with coverage:
@@ -68,7 +109,16 @@ The test suite is tested against multiple PHP and Laravel versions in CI:
 | 11.x | 8.2, 8.3, 8.4 | ^9.0 |
 | 12.x | 8.2, 8.3, 8.4 | ^10.0 |
 
-**Total:** 8 test combinations running in GitHub Actions
+All test combinations are tested in GitHub Actions CI/CD pipeline.
+
+## Test Requirements
+
+**All tests must pass before merging any changes.** The test suite ensures:
+- Command functionality works correctly
+- OS detection and installation prompts work across platforms
+- SSL certificate generation behaves as expected
+- Docker integration functions properly
+- All edge cases are handled gracefully
 
 ## CI/CD
 

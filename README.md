@@ -33,8 +33,8 @@ Comparison of performance measurements between *without* and *with* FrankenPHP u
 
 - PHP 8.2 or higher
 - Laravel 10.x, 11.x, or 12.x
-- Docker and Docker Compose
-- [mkcert](https://github.com/FiloSottile/mkcert) (for SSL certificates)
+- Docker and Docker Compose (auto-detected, installation prompted if missing)
+- [mkcert](https://github.com/FiloSottile/mkcert) (auto-detected, installation prompted if missing)
 
 ## Installation
 
@@ -67,11 +67,17 @@ This command will:
 
 **For Development (Optional):**
 
-Install [mkcert](https://github.com/FiloSottile/mkcert/releases) for trusted HTTPS:
+Setup SSL certificates for trusted HTTPS:
 
 ```bash
 php artisan laradox:setup-ssl
 ```
+
+Laradox will automatically:
+- Detect if mkcert is installed
+- Prompt to install mkcert if missing (supports Ubuntu, Debian, Fedora, CentOS, and macOS)
+- Guide you through the installation process
+- Generate certificates once mkcert is available
 
 Or manually:
 
@@ -90,15 +96,25 @@ php artisan laradox:setup-ssl
 # Or use --force-ssl=false to bypass (not recommended)
 ```
 
-> **Windows WSL2 Users**: Run the mkcert command on the Windows side to install certificates in your Windows trust store.
+> **Windows Users**: mkcert installation is not automated on Windows. Please download from [mkcert releases](https://github.com/FiloSottile/mkcert/releases) and run manually.
+
+> **WSL2 Users**: Run the mkcert command on the Windows side to install certificates in your Windows trust store.
 
 ### Step 5: Start Docker Containers
+
+Laradox automatically checks for Docker and Docker Compose before starting containers.
 
 **Development:**
 
 ```bash
 php artisan laradox:up --detach
 ```
+
+If Docker is not installed, Laradox will:
+- Detect your operating system (Ubuntu, Debian, Fedora, CentOS, macOS, Windows)
+- Provide installation instructions
+- Prompt to install Docker automatically (Linux and macOS)
+- Guide you through the installation process
 
 Or using Docker Compose directly:
 
@@ -390,7 +406,7 @@ Laradox is open-sourced software licensed under the [MIT license](LICENSE).
 
 ## Testing
 
-Laradox includes a comprehensive test suite with 53 tests covering all functionality.
+Laradox includes a comprehensive test suite covering all functionality. All tests must pass to ensure proper operation.
 
 ### Running Tests
 
@@ -401,8 +417,13 @@ composer test
 # Run with coverage report
 vendor/bin/phpunit --coverage-html build/coverage
 
+# Run specific test suite
+vendor/bin/phpunit tests/Feature/
+vendor/bin/phpunit tests/Unit/
+
 # Run specific test file
 vendor/bin/phpunit tests/Feature/InstallCommandTest.php
+vendor/bin/phpunit tests/Unit/UpCommandTest.php
 ```
 
 ## Credits
