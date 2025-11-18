@@ -135,4 +135,94 @@ class UpCommandTest extends FeatureTestCase
             ->expectsOutputToContain('SSL certificates found')
             ->expectsOutputToContain('app-https.conf');
     }
+
+    #[Test]
+    public function it_forces_ssl_with_flag_true(): void
+    {
+        $this->createTestDockerComposeFile('development');
+        $this->createTestSslDirectory();
+        
+        // Create both nginx configs
+        $httpConfigPath = base_path('docker/nginx/conf.d/app-http.conf');
+        $httpsConfigPath = base_path('docker/nginx/conf.d/app-https.conf');
+        
+        File::ensureDirectoryExists(dirname($httpConfigPath));
+        File::put($httpConfigPath, 'http config');
+        File::put($httpsConfigPath, 'https config');
+        
+        // Create valid SSL certificates
+        File::put(config('laradox.ssl.cert_path'), 'dummy cert');
+        File::put(config('laradox.ssl.key_path'), 'dummy key');
+
+        $this->artisan('laradox:up', ['--force-ssl' => 'true'])
+            ->expectsOutputToContain('Force SSL enabled')
+            ->expectsOutputToContain('app-https.conf');
+    }
+
+    #[Test]
+    public function it_fails_when_forcing_ssl_without_certificates(): void
+    {
+        $this->createTestDockerComposeFile('development');
+        $this->createTestSslDirectory();
+        
+        // Create nginx configs but NO certificates
+        $httpConfigPath = base_path('docker/nginx/conf.d/app-http.conf');
+        $httpsConfigPath = base_path('docker/nginx/conf.d/app-https.conf');
+        
+        File::ensureDirectoryExists(dirname($httpConfigPath));
+        File::put($httpConfigPath, 'http config');
+        File::put($httpsConfigPath, 'https config');
+
+        $this->artisan('laradox:up', ['--force-ssl' => 'true'])
+            ->expectsOutput('✗ SSL is forced but certificates not found!')
+            ->assertExitCode(1);
+    }
+
+    #[Test]
+    public function it_forces_http_only_with_flag_false(): void
+    {
+        $this->createTestDockerComposeFile('development');
+        $this->createTestSslDirectory();
+        
+        // Create both nginx configs
+        $httpConfigPath = base_path('docker/nginx/conf.d/app-http.conf');
+        $httpsConfigPath = base_path('docker/nginx/conf.d/app-https.conf');
+        
+        File::ensureDirectoryExists(dirname($httpConfigPath));
+        File::put($httpConfigPath, 'http config');
+        File::put($httpsConfigPath, 'https config');
+        
+        // Even with SSL certificates, should use HTTP
+        File::put(config('laradox.ssl.cert_path'), 'dummy cert');
+        File::put(config('laradox.ssl.key_path'), 'dummy key');
+
+        $this->artisan('laradox:up', ['--force-ssl' => 'false'])
+            ->expectsOutputToContain('Force HTTP enabled')
+            ->expectsOutputToContain('app-http.conf');
+    }
+
+    #[Test]
+    public function it_bypasses_production_ssl_requirement_with_force_flag(): void
+    {
+        $this->createTestDockerComposeFile('production');
+        $this->createTestSslDirectory();
+        
+        // Create nginx configs but NO certificates
+        $httpConfigPath = base_path('docker/nginx/conf.d/app-http.conf');
+        $httpsConfigPath = base_path('docker/nginx/conf.d/app-https.conf');
+        
+        File::ensureDirectoryExists(dirname($httpConfigPath));
+        File::put($httpConfigPath, 'http config');
+        File::put($httpsConfigPath, 'https config');
+
+        // Production without SSL should fail normally
+        $this->artisan('laradox:up', ['--environment' => 'production'])
+            ->expectsOutput('✗ SSL certificates are required for production environment!')
+            ->assertExitCode(1);
+
+        // But with --force-ssl=false, it should work
+        $this->artisan('laradox:up', ['--environment' => 'production', '--force-ssl' => 'false'])
+            ->expectsOutputToContain('Force HTTP enabled')
+            ->expectsOutputToContain('app-http.conf');
+    }
 }

@@ -14,7 +14,8 @@ class UpCommand extends Command
     protected $signature = 'laradox:up 
                             {--environment=development : Environment (development|production)}
                             {--d|detach : Run in detached mode}
-                            {--build : Build images before starting}';
+                            {--build : Build images before starting}
+                            {--force-ssl= : Force SSL usage (true=HTTPS required, false=HTTP only, default=auto-detect)}';
 
     /**
      * The console command description.
@@ -41,8 +42,11 @@ class UpCommand extends Command
         $keyPath = config('laradox.ssl.key_path');
         $sslExists = file_exists($certPath) && file_exists($keyPath);
 
+        // Get force-ssl flag value
+        $forceSsl = $this->option('force-ssl');
+
         // Determine which nginx config to use
-        $nginxConfigSource = $this->determineNginxConfig($env, $sslExists);
+        $nginxConfigSource = $this->determineNginxConfig($env, $sslExists, $forceSsl);
         if ($nginxConfigSource === false) {
             return self::FAILURE;
         }
@@ -83,12 +87,38 @@ class UpCommand extends Command
     /**
      * Determine which nginx configuration to use based on environment and SSL availability.
      */
-    protected function determineNginxConfig(string $env, bool $sslExists): string|false
+    protected function determineNginxConfig(string $env, bool $sslExists, ?string $forceSsl): string|false
     {
         $certPath = config('laradox.ssl.cert_path');
         $keyPath = config('laradox.ssl.key_path');
 
-        // Production MUST have SSL
+        // Handle --force-ssl flag
+        if ($forceSsl !== null) {
+            $forceSslBool = filter_var($forceSsl, FILTER_VALIDATE_BOOLEAN);
+            
+            if ($forceSslBool) {
+                // Force SSL: require certificates
+                if (!$sslExists) {
+                    $this->newLine();
+                    $this->error('✗ SSL is forced but certificates not found!');
+                    $this->line('Certificates must exist at:');
+                    $this->line("  - {$certPath}");
+                    $this->line("  - {$keyPath}");
+                    $this->newLine();
+                    $this->comment('Generate certificates with: php artisan laradox:setup-ssl');
+                    $this->newLine();
+                    return false;
+                }
+                $this->info('✓ Force SSL enabled, using HTTPS configuration');
+                return 'app-https.conf';
+            } else {
+                // Force HTTP only
+                $this->warn('⚠ Force HTTP enabled, SSL disabled');
+                return 'app-http.conf';
+            }
+        }
+
+        // Production MUST have SSL (unless explicitly forced to HTTP)
         if ($env === 'production' && !$sslExists) {
             $this->newLine();
             $this->error('✗ SSL certificates are required for production environment!');
@@ -97,6 +127,7 @@ class UpCommand extends Command
             $this->line("  - {$keyPath}");
             $this->newLine();
             $this->comment('Generate certificates with: php artisan laradox:setup-ssl');
+            $this->comment('Or use --force-ssl=false to skip SSL (not recommended for production)');
             $this->newLine();
             return false;
         }
