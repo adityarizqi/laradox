@@ -288,7 +288,9 @@ trait ChecksDocker
         } elseif ($os === 'linux') {
             exec("xdg-open " . escapeshellarg($url) . " 2>/dev/null &");
         } elseif ($os === 'windows') {
-            exec("start " . escapeshellarg($url));
+            // Use an empty window title to ensure the URL is treated as the target
+            exec('start "" ' . escapeshellarg($url));
         }
+    }
     }
 }
