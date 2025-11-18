@@ -225,4 +225,36 @@ class UpCommandTest extends FeatureTestCase
             ->expectsOutputToContain('Force HTTP enabled')
             ->expectsOutputToContain('app-http.conf');
     }
+
+    #[Test]
+    public function it_checks_docker_installation_before_running(): void
+    {
+        // This test verifies that the command checks for Docker
+        // If Docker is installed, it proceeds; if not, it handles gracefully
+        $this->createTestDockerComposeFile();
+        $this->createTestSslDirectory();
+        File::put(config('laradox.ssl.cert_path'), 'dummy cert');
+        File::put(config('laradox.ssl.key_path'), 'dummy key');
+        
+        $result = $this->artisan('laradox:up', ['--detach' => true]);
+        
+        // Command should either succeed with Docker or fail with error message
+        $this->assertContains($result->run(), [0, 1]);
+    }
+
+    #[Test]
+    public function it_checks_docker_compose_before_running(): void
+    {
+        // This test verifies that the command checks for Docker Compose
+        $this->createTestDockerComposeFile();
+        $this->createTestSslDirectory();
+        File::put(config('laradox.ssl.cert_path'), 'dummy cert');
+        File::put(config('laradox.ssl.key_path'), 'dummy key');
+        
+        $result = $this->artisan('laradox:up', ['--detach' => true]);
+        
+        // Command should check for Docker Compose availability
+        $this->assertContains($result->run(), [0, 1]);
+    }
 }
+

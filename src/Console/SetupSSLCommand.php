@@ -37,13 +37,7 @@ class SetupSSLCommand extends Command
 
         // Check if mkcert is installed
         if (!$this->checkMkcert()) {
-            $this->newLine();
-            $this->warn('⚠ mkcert is not installed or not in PATH.');
-            $this->line('SSL certificates are optional. You can run Laradox without HTTPS.');
-            $this->line('To enable HTTPS, install mkcert from: https://github.com/FiloSottile/mkcert/releases');
-            $this->line('Then run this command again: php artisan laradox:setup-ssl');
-            $this->newLine();
-            return self::FAILURE;
+            return $this->handleMissingMkcert();
         }
 
         $domain = $this->option('domain') ?: config('laradox.domain');
@@ -96,5 +90,188 @@ class SetupSSLCommand extends Command
     {
         exec('which mkcert', $output, $returnCode);
         return $returnCode === 0;
+    }
+
+    /**
+     * Handle missing mkcert installation.
+     *
+     * @return int
+     */
+    protected function handleMissingMkcert(): int
+    {
+        $this->newLine();
+        $this->warn('⚠ mkcert is not installed or not in PATH.');
+        $this->line('SSL certificates are optional. You can run Laradox without HTTPS.');
+        $this->newLine();
+
+        $os = $this->detectOS();
+
+        if ($os === 'linux') {
+            if ($this->confirm('Would you like to install mkcert automatically?', true)) {
+                return $this->installMkcertLinux();
+            }
+        } elseif ($os === 'macos') {
+            if ($this->confirm('Would you like to install mkcert using Homebrew?', true)) {
+                return $this->installMkcertMacOS();
+            }
+        } elseif ($os === 'windows') {
+            $this->info('For Windows, please download the mkcert executable:');
+            $this->line('1. Visit: https://github.com/FiloSottile/mkcert/releases');
+            $this->line('2. Download the latest Windows executable (mkcert-v*-windows-amd64.exe)');
+            $this->line('3. Rename it to mkcert.exe and add to your PATH');
+            $this->newLine();
+            if ($this->confirm('Open the download page in your browser?', true)) {
+                $this->openURL('https://github.com/FiloSottile/mkcert/releases');
+            }
+        } else {
+            $this->line('To enable HTTPS, install mkcert from: https://github.com/FiloSottile/mkcert/releases');
+        }
+
+        $this->newLine();
+        $this->line('After installation, run this command again: php artisan laradox:setup-ssl');
+        $this->newLine();
+
+        return self::FAILURE;
+    }
+
+    /**
+     * Detect the operating system.
+     *
+     * @return string 'linux', 'macos', 'windows', or 'unknown'
+     */
+    protected function detectOS(): string
+    {
+        $os = strtolower(PHP_OS);
+
+        if (stripos($os, 'linux') !== false) {
+            return 'linux';
+        } elseif (stripos($os, 'darwin') !== false) {
+            return 'macos';
+        } elseif (stripos($os, 'win') !== false) {
+            return 'windows';
+        }
+
+        return 'unknown';
+    }
+
+    /**
+     * Install mkcert on Linux.
+     *
+     * @return int
+     */
+    protected function installMkcertLinux(): int
+    {
+        $this->info('Installing mkcert on Linux...');
+        $this->newLine();
+
+        // Detect package manager
+        $hasApt = $this->commandExists('apt-get');
+        $hasYum = $this->commandExists('yum');
+        $hasDnf = $this->commandExists('dnf');
+
+        if ($hasApt) {
+            $this->line('Using apt package manager...');
+            $commands = [
+                'sudo apt-get update',
+                'sudo apt-get install -y mkcert',
+            ];
+        } elseif ($hasDnf) {
+            $this->line('Using dnf package manager...');
+            $commands = [
+                'sudo dnf install -y mkcert',
+            ];
+        } elseif ($hasYum) {
+            $this->line('Using yum package manager...');
+            $commands = [
+                'sudo yum install -y mkcert',
+            ];
+        } else {
+            $this->error('Could not detect package manager (apt, yum, or dnf).');
+            $this->line('Please install mkcert manually: https://github.com/FiloSottile/mkcert');
+            return self::FAILURE;
+        }
+
+        foreach ($commands as $command) {
+            $this->line("Running: {$command}");
+            passthru($command, $returnCode);
+            if ($returnCode !== 0) {
+                $this->error('Installation failed.');
+                return self::FAILURE;
+            }
+        }
+
+        $this->newLine();
+        $this->info('✓ mkcert installed successfully!');
+        $this->line('Running SSL setup...');
+        $this->newLine();
+
+        // Re-run the SSL setup now that mkcert is installed
+        return $this->handle();
+    }
+
+    /**
+     * Install mkcert on macOS using Homebrew.
+     *
+     * @return int
+     */
+    protected function installMkcertMacOS(): int
+    {
+        if (!$this->commandExists('brew')) {
+            $this->error('Homebrew is not installed.');
+            $this->line('Please install Homebrew first: https://brew.sh');
+            $this->line('Or install mkcert manually: https://github.com/FiloSottile/mkcert');
+            return self::FAILURE;
+        }
+
+        $this->info('Installing mkcert using Homebrew...');
+        $this->newLine();
+
+        $command = 'brew install mkcert';
+        $this->line("Running: {$command}");
+        passthru($command, $returnCode);
+
+        if ($returnCode !== 0) {
+            $this->error('Installation failed.');
+            return self::FAILURE;
+        }
+
+        $this->newLine();
+        $this->info('✓ mkcert installed successfully!');
+        $this->line('Running SSL setup...');
+        $this->newLine();
+
+        // Re-run the SSL setup now that mkcert is installed
+        return $this->handle();
+    }
+
+    /**
+     * Check if a command exists.
+     *
+     * @param string $command
+     * @return bool
+     */
+    protected function commandExists(string $command): bool
+    {
+        exec("which {$command}", $output, $returnCode);
+        return $returnCode === 0;
+    }
+
+    /**
+     * Open a URL in the default browser.
+     *
+     * @param string $url
+     * @return void
+     */
+    protected function openURL(string $url): void
+    {
+        $os = $this->detectOS();
+
+        if ($os === 'macos') {
+            exec("open " . escapeshellarg($url));
+        } elseif ($os === 'linux') {
+            exec("xdg-open " . escapeshellarg($url));
+        } elseif ($os === 'windows') {
+            exec("start " . escapeshellarg($url));
+        }
     }
 }

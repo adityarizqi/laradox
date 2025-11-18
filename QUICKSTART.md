@@ -4,9 +4,11 @@ Get your Laravel application running with Docker in less than 5 minutes!
 
 ## Prerequisites
 
-- Docker and Docker Compose installed
 - PHP 8.2+ and Composer installed locally
-- [mkcert](https://github.com/FiloSottile/mkcert/releases) downloaded
+- Docker and Docker Compose (Laradox will detect and help install if missing)
+- [mkcert](https://github.com/FiloSottile/mkcert) (Laradox will detect and help install if missing)
+
+> **Note**: Laradox automatically detects missing prerequisites and guides you through installation on Linux and macOS.
 
 ## Quick Start (5 Steps)
 
@@ -34,15 +36,35 @@ php artisan laradox:install
 php artisan laradox:setup-ssl
 ```
 
-> **Development**: SSL is optional. If mkcert is not installed, Laradox will work with HTTP on port 80.
+Laradox will automatically detect if mkcert is installed and prompt to install it if missing:
+- **Linux (Ubuntu/Debian)**: Installs via `apt-get install mkcert`
+- **Linux (Fedora)**: Installs via `dnf install mkcert`
+- **Linux (CentOS)**: Installs via `yum install mkcert`
+- **macOS**: Installs via `brew install mkcert`
+- **Windows**: Provides download link (manual installation required)
+
+> **Development**: SSL is optional. If you skip mkcert installation, Laradox will work with HTTP on port 80.
 > 
-> **Production**: SSL is **REQUIRED**. Install mkcert from https://github.com/FiloSottile/mkcert/releases or provide valid SSL certificates.
+> **Production**: SSL is **REQUIRED**. Laradox will guide you through mkcert installation or you can provide valid SSL certificates manually.
 
 ### 5. Start Docker Containers
 
 ```bash
 php artisan laradox:up --detach
 ```
+
+Laradox will automatically check for Docker and Docker Compose:
+- Detects if Docker is installed and running
+- Prompts to install Docker if missing (Linux and macOS)
+- Provides installation instructions for your OS
+- Guides you through the installation process
+
+Supported automatic installations:
+- **Ubuntu/Debian**: Installs Docker via official Docker repository
+- **Fedora**: Installs via `dnf install docker docker-compose`
+- **CentOS**: Installs via `yum install docker docker-compose`
+- **macOS**: Guides to install Docker Desktop
+- **Windows**: Guides to install Docker Desktop
 
 ## Post-Installation Setup
 

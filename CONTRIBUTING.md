@@ -31,16 +31,30 @@ Feature requests are welcome! Please open an issue describing:
 #### PR Guidelines
 
 - Follow PSR-12 coding standards
-- Add tests for new features
-- Update documentation as needed
+- Add tests for new features (both feature and unit tests when applicable)
+- Ensure all tests pass: `composer test`
+- Update documentation as needed (README.md, QUICKSTART.md, tests/README.md)
 - Keep commits focused and atomic
 - Write clear commit messages
+- Mock external dependencies (Docker, mkcert) in tests
 
 ### Development Setup
 
 1. Clone the repository
 2. Install dependencies: `composer install`
 3. Run tests: `composer test`
+4. Check test output: `vendor/bin/phpunit --testdox`
+5. Generate coverage report: `vendor/bin/phpunit --coverage-html build/coverage`
+
+### Test Requirements
+
+When adding new features:
+- Add feature tests in `tests/Feature/` for end-to-end functionality
+- Add unit tests in `tests/Unit/` for individual components
+- Mock external commands (exec, passthru) to avoid requiring Docker/mkcert in tests
+- **All tests must pass before submitting PR** - no exceptions
+- Aim for high code coverage on new code
+- Test across multiple scenarios and edge cases
 
 ## Code of Conduct
 
