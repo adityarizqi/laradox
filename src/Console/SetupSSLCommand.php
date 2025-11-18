@@ -173,26 +173,17 @@ class SetupSSLCommand extends Command
             $this->line('Using apt package manager...');
             $commands = [
                 'sudo apt-get update',
-                'sudo apt-get install -y libnss3-tools',
-                'curl -JLO "https://dl.filippo.io/mkcert/latest?for=linux/amd64"',
-                'chmod +x mkcert-v*-linux-amd64',
-                'sudo mv mkcert-v*-linux-amd64 /usr/local/bin/mkcert',
+                'sudo apt-get install -y mkcert',
             ];
         } elseif ($hasDnf) {
             $this->line('Using dnf package manager...');
             $commands = [
-                'sudo dnf install -y nss-tools',
-                'curl -JLO "https://dl.filippo.io/mkcert/latest?for=linux/amd64"',
-                'chmod +x mkcert-v*-linux-amd64',
-                'sudo mv mkcert-v*-linux-amd64 /usr/local/bin/mkcert',
+                'sudo dnf install -y mkcert',
             ];
         } elseif ($hasYum) {
             $this->line('Using yum package manager...');
             $commands = [
-                'sudo yum install -y nss-tools',
-                'curl -JLO "https://dl.filippo.io/mkcert/latest?for=linux/amd64"',
-                'chmod +x mkcert-v*-linux-amd64',
-                'sudo mv mkcert-v*-linux-amd64 /usr/local/bin/mkcert',
+                'sudo yum install -y mkcert',
             ];
         } else {
             $this->error('Could not detect package manager (apt, yum, or dnf).');

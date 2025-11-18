@@ -118,15 +118,16 @@ trait ChecksDocker
             // Update packages
             'sudo apt-get update',
             // Install prerequisites
-            'sudo apt-get install -y ca-certificates curl gnupg lsb-release',
+            'sudo apt-get install -y ca-certificates curl',
             // Add Docker's official GPG key
-            'sudo mkdir -p /etc/apt/keyrings',
-            'curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo gpg --dearmor -o /etc/apt/keyrings/docker.gpg',
+            'sudo install -m 0755 -d /etc/apt/keyrings',
+            'sudo curl -fsSL https://download.docker.com/linux/ubuntu/gpg -o /etc/apt/keyrings/docker.asc',
+            'sudo chmod a+r /etc/apt/keyrings/docker.asc',
             // Set up repository
-            'echo "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable" | sudo tee /etc/apt/sources.list.d/docker.list > /dev/null',
+            'echo "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.asc] https://download.docker.com/linux/ubuntu $(. /etc/os-release && echo "$VERSION_CODENAME") stable" | sudo tee /etc/apt/sources.list.d/docker.list > /dev/null',
             // Install Docker Engine
             'sudo apt-get update',
-            'sudo apt-get install -y docker-ce docker-ce-cli containerd.io docker-compose-plugin',
+            'sudo apt-get install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin',
             // Add current user to docker group
             'sudo usermod -aG docker $USER',
             // Start Docker service
