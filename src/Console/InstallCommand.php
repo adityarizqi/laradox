@@ -22,7 +22,12 @@ class InstallCommand extends Command
     protected $description = 'Install Laradox Docker environment for Laravel';
 
     /**
-     * Execute the console command.
+     * Installs the Laradox Docker environment and outputs next-step instructions.
+     *
+     * Publishes Laradox vendor assets (honoring the command's --force option), ensures helper scripts are executable,
+     * creates the docker/nginx/ssl directory when missing, and prints installation success and follow-up commands.
+     *
+     * @return int The command exit status code.
      */
     public function handle(): int
     {
