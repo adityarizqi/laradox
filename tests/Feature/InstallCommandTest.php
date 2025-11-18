@@ -93,8 +93,8 @@ class InstallCommandTest extends FeatureTestCase
     {
         $this->artisan('laradox:install')
             ->expectsOutput('Next steps:')
-            ->expectsOutput('1. Run: php artisan laradox:setup-ssl')
-            ->expectsOutput('2. Run: php artisan laradox:up')
+            ->expectsOutputToContain('Setup SSL')
+            ->expectsOutputToContain('php artisan laradox:up')
             ->assertExitCode(0);
     }
 }

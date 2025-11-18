@@ -17,10 +17,14 @@ class SetupSSLCommandTest extends FeatureTestCase
 
     #[Test]
     public function it_checks_for_mkcert_installation(): void
-    {
-        // This will likely fail in CI/test environments where mkcert isn't installed
-        $this->artisan('laradox:setup-ssl')
-            ->expectsOutput('Setting up SSL certificates...');
+    {        
+        // In CI/test environments where mkcert isn't installed, command returns 1
+        // If mkcert is installed, it succeeds and returns 0
+        $result = $this->artisan('laradox:setup-ssl');
+        $result->expectsOutput('Setting up SSL certificates...');
+        
+        // Accept either exit code since mkcert may or may not be installed
+        $this->assertContains($result->run(), [0, 1]);
     }
 
     #[Test]

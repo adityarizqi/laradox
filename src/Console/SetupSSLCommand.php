@@ -24,7 +24,12 @@ class SetupSSLCommand extends Command
     protected $description = 'Generate SSL certificates using mkcert';
 
     /**
-     * Execute the console command.
+     * Generate SSL certificates for the configured domain(s) using mkcert.
+     *
+     * Creates the SSL directory if necessary, executes mkcert to produce the certificate and key files,
+     * and writes progress and error messages to the console. If mkcert is not available, emits guidance and exits with failure.
+     *
+     * @return int Exit status: `0` on success, non-zero on failure.
      */
     public function handle(): int
     {
@@ -32,8 +37,12 @@ class SetupSSLCommand extends Command
 
         // Check if mkcert is installed
         if (!$this->checkMkcert()) {
-            $this->error('mkcert is not installed or not in PATH.');
-            $this->line('Please install mkcert from: https://github.com/FiloSottile/mkcert/releases');
+            $this->newLine();
+            $this->warn('⚠ mkcert is not installed or not in PATH.');
+            $this->line('SSL certificates are optional. You can run Laradox without HTTPS.');
+            $this->line('To enable HTTPS, install mkcert from: https://github.com/FiloSottile/mkcert/releases');
+            $this->line('Then run this command again: php artisan laradox:setup-ssl');
+            $this->newLine();
             return self::FAILURE;
         }
 

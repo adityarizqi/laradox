@@ -34,7 +34,9 @@ php artisan laradox:install
 php artisan laradox:setup-ssl
 ```
 
-> **Note**: Make sure mkcert is installed first! Download from https://github.com/FiloSottile/mkcert/releases
+> **Development**: SSL is optional. If mkcert is not installed, Laradox will work with HTTP on port 80.
+> 
+> **Production**: SSL is **REQUIRED**. Install mkcert from https://github.com/FiloSottile/mkcert/releases or provide valid SSL certificates.
 
 ### 5. Start Docker Containers
 
@@ -61,13 +63,21 @@ php artisan laradox:up --detach
 
 ## Access Your Application
 
-Open your browser: **https://laravel.docker.localhost**
+Open your browser:
+- **With SSL**: https://laravel.docker.localhost
+- **Without SSL**: http://laravel.docker.localhost
 
 ## Common Commands
 
 ```bash
-# Start containers
+# Start containers (auto-detects SSL)
 php artisan laradox:up --detach
+
+# Start with HTTPS (requires SSL certificates)
+php artisan laradox:up --force-ssl=true --detach
+
+# Start with HTTP only (no SSL)
+php artisan laradox:up --force-ssl=false --detach
 
 # Stop containers
 php artisan laradox:down
@@ -86,17 +96,51 @@ docker compose -f docker-compose.development.yml logs -f
 ./npm run build
 ```
 
+## SSL Configuration Options
+
+Laradox provides flexible SSL configuration:
+
+### Auto-Detect (Default)
+```bash
+php artisan laradox:up
+```
+- Development: Prompts if SSL not found, allows HTTP-only
+- Production: Requires SSL certificates, fails if missing
+
+### Force HTTPS
+```bash
+php artisan laradox:up --force-ssl=true
+```
+- Always uses HTTPS configuration
+- Requires valid SSL certificates
+- Fails if certificates not found
+
+### Force HTTP Only
+```bash
+php artisan laradox:up --force-ssl=false
+```
+- Always uses HTTP-only configuration
+- Ignores SSL certificates even if present
+- Can bypass production SSL requirement (not recommended)
+
 ## Switching to Production
 
-1. Update `.env`:
+1. Setup SSL certificates (required):
+   ```bash
+   php artisan laradox:setup-ssl
+   ```
+
+2. Update `.env`:
    ```env
    LARADOX_ENV=production
    ```
 
-2. Start production containers:
+3. Start production containers:
    ```bash
    php artisan laradox:up --environment=production --build --detach
    ```
+
+> **Important**: Production requires SSL certificates. Use `--force-ssl=false` to bypass (not recommended).
 
 ## Troubleshooting
 
@@ -130,6 +174,20 @@ mkcert -uninstall
 php artisan laradox:setup-ssl
 ```
 
+### Containers already running?
+
+Laradox detects running containers and offers to restart them:
+```bash
+php artisan laradox:up
+# Will prompt: "Do you want to restart the containers?"
+```
+
+Or manually stop and start:
+```bash
+php artisan laradox:down
+php artisan laradox:up --detach
+```
+
 ## Custom Domain
 
 1. Update `.env`:
@@ -157,6 +215,8 @@ php artisan laradox:setup-ssl
 
 After `laradox:up`, you have:
 - ✅ Nginx on ports 80 (HTTP) and 443 (HTTPS)
+  - Auto-selects HTTP-only or HTTPS configuration
+  - HTTP→HTTPS redirect when SSL enabled
 - ✅ FrankenPHP with Laravel Octane on port 8080
 - ✅ Node.js for asset compilation
 - ✅ Laravel Scheduler (dev) or Supercronic (prod)

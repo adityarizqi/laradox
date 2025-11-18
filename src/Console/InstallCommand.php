@@ -22,7 +22,12 @@ class InstallCommand extends Command
     protected $description = 'Install Laradox Docker environment for Laravel';
 
     /**
-     * Execute the console command.
+     * Installs the Laradox Docker environment and outputs next-step instructions.
+     *
+     * Publishes Laradox vendor assets (honoring the command's --force option), ensures helper scripts are executable,
+     * creates the docker/nginx/ssl directory when missing, and prints installation success and follow-up commands.
+     *
+     * @return int The command exit status code.
      */
     public function handle(): int
     {
@@ -49,7 +54,8 @@ class InstallCommand extends Command
         $this->newLine();
 
         $this->comment('Next steps:');
-        $this->line('1. Run: php artisan laradox:setup-ssl');
+        $this->line('1. Setup SSL: php artisan laradox:setup-ssl');
+        $this->line('   Note: SSL is optional for development but REQUIRED for production');
         $this->line('2. Run: php artisan laradox:up');
         $this->line('3. Install dependencies: ./composer install && ./npm install');
         $this->newLine();

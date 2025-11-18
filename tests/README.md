@@ -45,9 +45,14 @@ The test suite covers:
 - ✅ File and directory creation
 - ✅ Script permissions and execution
 - ✅ Docker Compose file handling
-- ✅ SSL certificate setup
+- ✅ SSL certificate setup and validation
+- ✅ SSL optional for development environments
+- ✅ SSL requirement enforcement for production
+- ✅ Automatic nginx configuration selection (HTTP/HTTPS)
+- ✅ `--force-ssl` flag behavior (true/false/auto-detect)
 - ✅ Environment variable overrides
 - ✅ Error handling and validation
+- ✅ Interactive prompts and user confirmations
 
 ## Writing New Tests
 
