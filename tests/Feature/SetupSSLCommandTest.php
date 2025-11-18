@@ -4,17 +4,18 @@ namespace Laradox\Tests\Feature;
 
 use Illuminate\Support\Facades\File;
 use Laradox\Tests\FeatureTestCase;
+use PHPUnit\Framework\Attributes\Test;
 
 class SetupSSLCommandTest extends FeatureTestCase
 {
-    /** @test */
+    #[Test]
     public function it_displays_setup_message(): void
     {
         $this->artisan('laradox:setup-ssl')
             ->expectsOutput('Setting up SSL certificates...');
     }
 
-    /** @test */
+    #[Test]
     public function it_checks_for_mkcert_installation(): void
     {
         // This will likely fail in CI/test environments where mkcert isn't installed
@@ -22,7 +23,7 @@ class SetupSSLCommandTest extends FeatureTestCase
             ->expectsOutput('Setting up SSL certificates...');
     }
 
-    /** @test */
+    #[Test]
     public function it_uses_domain_from_config(): void
     {
         $this->app['config']->set('laradox.domain', 'custom.docker.localhost');
@@ -33,14 +34,14 @@ class SetupSSLCommandTest extends FeatureTestCase
         $this->assertEquals('custom.docker.localhost', config('laradox.domain'));
     }
 
-    /** @test */
+    #[Test]
     public function it_accepts_domain_option(): void
     {
         $this->artisan('laradox:setup-ssl', ['--domain' => 'override.docker.localhost'])
             ->expectsOutput('Setting up SSL certificates...');
     }
 
-    /** @test */
+    #[Test]
     public function it_accepts_additional_domains_option(): void
     {
         $this->artisan('laradox:setup-ssl', [
@@ -48,7 +49,7 @@ class SetupSSLCommandTest extends FeatureTestCase
         ])->expectsOutput('Setting up SSL certificates...');
     }
 
-    /** @test */
+    #[Test]
     public function it_creates_ssl_directory_if_not_exists(): void
     {
         $sslDir = dirname(config('laradox.ssl.cert_path'));
@@ -68,7 +69,7 @@ class SetupSSLCommandTest extends FeatureTestCase
         );
     }
 
-    /** @test */
+    #[Test]
     public function it_uses_config_ssl_paths(): void
     {
         $certPath = base_path('docker/nginx/ssl/cert.pem');
@@ -78,7 +79,7 @@ class SetupSSLCommandTest extends FeatureTestCase
         $this->assertEquals($keyPath, config('laradox.ssl.key_path'));
     }
 
-    /** @test */
+    #[Test]
     public function it_includes_additional_domains_from_config(): void
     {
         $this->app['config']->set('laradox.additional_domains', [
@@ -92,7 +93,7 @@ class SetupSSLCommandTest extends FeatureTestCase
         );
     }
 
-    /** @test */
+    #[Test]
     public function it_properly_escapes_domain_arguments(): void
     {
         // Test that special characters in domains are handled safely

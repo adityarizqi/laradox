@@ -4,10 +4,11 @@ namespace Laradox\Tests\Feature;
 
 use Illuminate\Support\Facades\File;
 use Laradox\Tests\FeatureTestCase;
+use PHPUnit\Framework\Attributes\Test;
 
 class DownCommandTest extends FeatureTestCase
 {
-    /** @test */
+    #[Test]
     public function it_fails_when_docker_compose_file_not_found(): void
     {
         $this->artisan('laradox:down')
@@ -15,7 +16,7 @@ class DownCommandTest extends FeatureTestCase
             ->assertExitCode(1);
     }
 
-    /** @test */
+    #[Test]
     public function it_accepts_environment_option(): void
     {
         $this->createTestDockerComposeFile('production');
@@ -25,7 +26,7 @@ class DownCommandTest extends FeatureTestCase
         $this->assertTrue(File::exists(base_path('docker-compose.production.yml')));
     }
 
-    /** @test */
+    #[Test]
     public function it_uses_development_environment_by_default(): void
     {
         $this->createTestDockerComposeFile('development');
@@ -35,7 +36,7 @@ class DownCommandTest extends FeatureTestCase
         $this->assertTrue(File::exists(base_path('docker-compose.development.yml')));
     }
 
-    /** @test */
+    #[Test]
     public function it_accepts_volumes_option(): void
     {
         $this->createTestDockerComposeFile();
@@ -46,7 +47,7 @@ class DownCommandTest extends FeatureTestCase
             ->expectsOutput('Stopping Laradox (development environment)...');
     }
 
-    /** @test */
+    #[Test]
     public function it_displays_stopping_message(): void
     {
         $this->createTestDockerComposeFile();
@@ -55,7 +56,7 @@ class DownCommandTest extends FeatureTestCase
             ->expectsOutput('Stopping Laradox (development environment)...');
     }
 
-    /** @test */
+    #[Test]
     public function it_displays_execution_command(): void
     {
         $this->createTestDockerComposeFile();
@@ -64,7 +65,7 @@ class DownCommandTest extends FeatureTestCase
             ->expectsOutputToContain('Executing:');
     }
 
-    /** @test */
+    #[Test]
     public function it_handles_production_environment(): void
     {
         $this->createTestDockerComposeFile('production');
@@ -73,7 +74,7 @@ class DownCommandTest extends FeatureTestCase
             ->expectsOutput('Stopping Laradox (production environment)...');
     }
 
-    /** @test */
+    #[Test]
     public function it_escapes_shell_arguments(): void
     {
         $testPath = base_path('docker-compose.development.yml');

@@ -8,10 +8,11 @@ use Laradox\Console\SetupSSLCommand;
 use Laradox\Console\UpCommand;
 use Laradox\LaradoxServiceProvider;
 use Laradox\Tests\TestCase;
+use PHPUnit\Framework\Attributes\Test;
 
 class LaradoxServiceProviderTest extends TestCase
 {
-    /** @test */
+    #[Test]
     public function it_registers_the_service_provider(): void
     {
         $providers = $this->app->getLoadedProviders();
@@ -19,7 +20,7 @@ class LaradoxServiceProviderTest extends TestCase
         $this->assertArrayHasKey(LaradoxServiceProvider::class, $providers);
     }
 
-    /** @test */
+    #[Test]
     public function it_registers_commands(): void
     {
         $commands = [
@@ -37,7 +38,7 @@ class LaradoxServiceProviderTest extends TestCase
         }
     }
 
-    /** @test */
+    #[Test]
     public function it_merges_configuration(): void
     {
         $this->assertEquals('test.docker.localhost', config('laradox.domain'));
@@ -47,7 +48,7 @@ class LaradoxServiceProviderTest extends TestCase
         $this->assertArrayHasKey('key_path', config('laradox.ssl'));
     }
 
-    /** @test */
+    #[Test]
     public function it_has_publishable_config(): void
     {
         $provider = new LaradoxServiceProvider($this->app);
@@ -56,7 +57,7 @@ class LaradoxServiceProviderTest extends TestCase
         $this->assertInstanceOf(LaradoxServiceProvider::class, $provider);
     }
 
-    /** @test */
+    #[Test]
     public function it_defines_publish_groups(): void
     {
         $groups = LaradoxServiceProvider::$publishGroups;

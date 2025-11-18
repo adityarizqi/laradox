@@ -4,10 +4,11 @@ namespace Laradox\Tests\Feature;
 
 use Illuminate\Support\Facades\File;
 use Laradox\Tests\FeatureTestCase;
+use PHPUnit\Framework\Attributes\Test;
 
 class UpCommandTest extends FeatureTestCase
 {
-    /** @test */
+    #[Test]
     public function it_fails_when_docker_compose_file_not_found(): void
     {
         $this->artisan('laradox:up')
@@ -15,7 +16,7 @@ class UpCommandTest extends FeatureTestCase
             ->assertExitCode(1);
     }
 
-    /** @test */
+    #[Test]
     public function it_accepts_environment_option(): void
     {
         $this->createTestDockerComposeFile('production');
@@ -27,7 +28,7 @@ class UpCommandTest extends FeatureTestCase
         $this->assertTrue(File::exists(base_path('docker-compose.production.yml')));
     }
 
-    /** @test */
+    #[Test]
     public function it_uses_development_environment_by_default(): void
     {
         $this->createTestDockerComposeFile('development');
@@ -38,7 +39,7 @@ class UpCommandTest extends FeatureTestCase
         $this->assertTrue(File::exists(base_path('docker-compose.development.yml')));
     }
 
-    /** @test */
+    #[Test]
     public function it_accepts_detach_option(): void
     {
         $this->createTestDockerComposeFile();
@@ -48,7 +49,7 @@ class UpCommandTest extends FeatureTestCase
             ->doesntExpectOutput('Docker Compose file not found');
     }
 
-    /** @test */
+    #[Test]
     public function it_accepts_build_option(): void
     {
         $this->createTestDockerComposeFile();
@@ -58,7 +59,7 @@ class UpCommandTest extends FeatureTestCase
             ->doesntExpectOutput('Docker Compose file not found');
     }
 
-    /** @test */
+    #[Test]
     public function it_displays_starting_message(): void
     {
         $this->createTestDockerComposeFile();
@@ -68,7 +69,7 @@ class UpCommandTest extends FeatureTestCase
             ->doesntExpectOutput('Docker Compose file not found');
     }
 
-    /** @test */
+    #[Test]
     public function it_escapes_shell_arguments(): void
     {
         $this->createTestDockerComposeFile();

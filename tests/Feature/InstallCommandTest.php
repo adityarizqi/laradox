@@ -4,10 +4,11 @@ namespace Laradox\Tests\Feature;
 
 use Illuminate\Support\Facades\File;
 use Laradox\Tests\FeatureTestCase;
+use PHPUnit\Framework\Attributes\Test;
 
 class InstallCommandTest extends FeatureTestCase
 {
-    /** @test */
+    #[Test]
     public function it_can_install_laradox(): void
     {
         $this->artisan('laradox:install')
@@ -16,7 +17,7 @@ class InstallCommandTest extends FeatureTestCase
             ->assertExitCode(0);
     }
 
-    /** @test */
+    #[Test]
     public function it_creates_ssl_directory(): void
     {
         $this->artisan('laradox:install')->assertExitCode(0);
@@ -26,7 +27,7 @@ class InstallCommandTest extends FeatureTestCase
         $this->assertTrue(File::isDirectory($sslDir));
     }
 
-    /** @test */
+    #[Test]
     public function it_publishes_configuration_file(): void
     {
         $this->artisan('laradox:install')->assertExitCode(0);
@@ -34,7 +35,7 @@ class InstallCommandTest extends FeatureTestCase
         $this->assertTrue(File::exists(config_path('laradox.php')));
     }
 
-    /** @test */
+    #[Test]
     public function it_publishes_docker_compose_files(): void
     {
         $this->artisan('laradox:install')->assertExitCode(0);
@@ -43,7 +44,7 @@ class InstallCommandTest extends FeatureTestCase
         $this->assertTrue(File::exists(base_path('docker-compose.production.yml')));
     }
 
-    /** @test */
+    #[Test]
     public function it_publishes_helper_scripts(): void
     {
         $this->artisan('laradox:install')->assertExitCode(0);
@@ -53,7 +54,7 @@ class InstallCommandTest extends FeatureTestCase
         $this->assertTrue(File::exists(base_path('php')));
     }
 
-    /** @test */
+    #[Test]
     public function it_makes_scripts_executable(): void
     {
         $this->artisan('laradox:install')->assertExitCode(0);
@@ -72,7 +73,7 @@ class InstallCommandTest extends FeatureTestCase
         }
     }
 
-    /** @test */
+    #[Test]
     public function it_can_force_overwrite_existing_files(): void
     {
         // Create a dummy file
@@ -87,7 +88,7 @@ class InstallCommandTest extends FeatureTestCase
         $this->assertStringContainsString('Domain Configuration', File::get($configPath));
     }
 
-    /** @test */
+    #[Test]
     public function it_displays_next_steps(): void
     {
         $this->artisan('laradox:install')
