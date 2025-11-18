@@ -32,8 +32,12 @@ class SetupSSLCommand extends Command
 
         // Check if mkcert is installed
         if (!$this->checkMkcert()) {
-            $this->error('mkcert is not installed or not in PATH.');
-            $this->line('Please install mkcert from: https://github.com/FiloSottile/mkcert/releases');
+            $this->newLine();
+            $this->warn('⚠ mkcert is not installed or not in PATH.');
+            $this->line('SSL certificates are optional. You can run Laradox without HTTPS.');
+            $this->line('To enable HTTPS, install mkcert from: https://github.com/FiloSottile/mkcert/releases');
+            $this->line('Then run this command again: php artisan laradox:setup-ssl');
+            $this->newLine();
             return self::FAILURE;
         }
 

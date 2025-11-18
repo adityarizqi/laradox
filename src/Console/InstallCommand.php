@@ -49,7 +49,8 @@ class InstallCommand extends Command
         $this->newLine();
 
         $this->comment('Next steps:');
-        $this->line('1. Run: php artisan laradox:setup-ssl');
+        $this->line('1. Setup SSL: php artisan laradox:setup-ssl');
+        $this->line('   Note: SSL is optional for development but REQUIRED for production');
         $this->line('2. Run: php artisan laradox:up');
         $this->line('3. Install dependencies: ./composer install && ./npm install');
         $this->newLine();

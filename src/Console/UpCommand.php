@@ -36,6 +36,20 @@ class UpCommand extends Command
             return self::FAILURE;
         }
 
+        // Check if SSL certificates exist
+        $certPath = config('laradox.ssl.cert_path');
+        $keyPath = config('laradox.ssl.key_path');
+        $sslExists = file_exists($certPath) && file_exists($keyPath);
+
+        // Determine which nginx config to use
+        $nginxConfigSource = $this->determineNginxConfig($env, $sslExists);
+        if ($nginxConfigSource === false) {
+            return self::FAILURE;
+        }
+
+        // Copy the appropriate nginx config
+        $this->copyNginxConfig($nginxConfigSource);
+
         $this->info("Starting Laradox ({$env} environment)...");
 
         $command = sprintf(
@@ -64,5 +78,75 @@ class UpCommand extends Command
         }
 
         return $returnCode === 0 ? self::SUCCESS : self::FAILURE;
+    }
+
+    /**
+     * Determine which nginx configuration to use based on environment and SSL availability.
+     */
+    protected function determineNginxConfig(string $env, bool $sslExists): string|false
+    {
+        $certPath = config('laradox.ssl.cert_path');
+        $keyPath = config('laradox.ssl.key_path');
+
+        // Production MUST have SSL
+        if ($env === 'production' && !$sslExists) {
+            $this->newLine();
+            $this->error('✗ SSL certificates are required for production environment!');
+            $this->line('Certificates must exist at:');
+            $this->line("  - {$certPath}");
+            $this->line("  - {$keyPath}");
+            $this->newLine();
+            $this->comment('Generate certificates with: php artisan laradox:setup-ssl');
+            $this->newLine();
+            return false;
+        }
+
+        // Development: ask user preference if no SSL
+        if ($env === 'development' && !$sslExists) {
+            $this->newLine();
+            $this->warn('⚠ SSL certificates not found!');
+            $this->line('Certificates expected at:');
+            $this->line("  - {$certPath}");
+            $this->line("  - {$keyPath}");
+            $this->newLine();
+            $this->comment('Options:');
+            $this->line('1. Generate certificates: php artisan laradox:setup-ssl');
+            $this->line('2. Continue with HTTP only (port 80)');
+            $this->newLine();
+
+            if (!$this->confirm('Do you want to continue with HTTP only?', false)) {
+                $this->info('Cancelled. Please setup SSL certificates first.');
+                return false;
+            }
+
+            $this->warn('Using HTTP-only configuration...');
+            return 'app-http.conf';
+        }
+
+        // Use HTTPS config when SSL exists
+        if ($sslExists) {
+            $this->info('✓ SSL certificates found, using HTTPS configuration');
+            return 'app-https.conf';
+        }
+
+        return 'app-http.conf';
+    }
+
+    /**
+     * Copy the appropriate nginx configuration file.
+     */
+    protected function copyNginxConfig(string $configFile): void
+    {
+        $sourcePath = base_path("docker/nginx/conf.d/{$configFile}");
+        $targetPath = base_path('docker/nginx/conf.d/app.conf');
+
+        if (!file_exists($sourcePath)) {
+            $this->warn("Configuration file not found: {$sourcePath}");
+            $this->line('Using existing configuration...');
+            return;
+        }
+
+        copy($sourcePath, $targetPath);
+        $this->line("Using nginx configuration: {$configFile}");
     }
 }
