@@ -15,9 +15,6 @@ jobs:
       matrix:
         include:
           # Laravel 10.x - PHP 8.2, 8.3
-          - php: 8.1
-            laravel: 10.*
-            testbench: ^8.0
           - php: 8.2
             laravel: 10.*
             testbench: ^8.0
