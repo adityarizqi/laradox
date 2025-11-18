@@ -3,9 +3,11 @@
 namespace Laradox\Console;
 
 use Illuminate\Console\Command;
+use Laradox\Console\Concerns\ChecksDocker;
 
 class DownCommand extends Command
 {
+    use ChecksDocker;
     /**
      * The name and signature of the console command.
      *
@@ -27,6 +29,21 @@ class DownCommand extends Command
      */
     public function handle(): int
     {
+        // Check if Docker is installed
+        if (!$this->checkDocker()) {
+            return $this->handleMissingDocker();
+        }
+
+        // Check if Docker Compose is available
+        if (!$this->checkDockerCompose()) {
+            $this->newLine();
+            $this->error('✗ Docker Compose is not available.');
+            $this->line('Please ensure Docker Compose is installed and running.');
+            $this->line('Visit: https://docs.docker.com/compose/install/');
+            $this->newLine();
+            return self::FAILURE;
+        }
+
         $env = $this->option('environment');
         $composeFile = base_path("docker-compose.{$env}.yml");
 
