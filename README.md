@@ -13,7 +13,7 @@ Laradox provides a production-ready Docker environment optimized for Laravel Oct
 ## Features
 
 - 🚀 **Laravel Octane** with FrankenPHP for blazing-fast performance
-- 🔒 **HTTPS by default** using mkcert for local development
+- 🔒 **HTTPS support** - optional for development, **required for production**
 - 🐳 **Docker Compose** configurations for development and production
 - ⚡ **Nginx** as reverse proxy with optimized settings
 - 🔧 **Queue workers** with Supervisor
@@ -65,7 +65,9 @@ This command will:
 
 ### Step 4: Setup SSL Certificates
 
-Install [mkcert](https://github.com/FiloSottile/mkcert/releases) and run:
+**For Development (Optional):**
+
+Install [mkcert](https://github.com/FiloSottile/mkcert/releases) for trusted HTTPS:
 
 ```bash
 php artisan laradox:setup-ssl
@@ -76,6 +78,12 @@ Or manually:
 ```bash
 mkcert -install -cert-file ./docker/nginx/ssl/cert.pem -key-file ./docker/nginx/ssl/key.pem "*.docker.localhost" docker.localhost
 ```
+
+> **Development**: SSL is optional. You can run with HTTP only (port 80). Self-signed certificates are created automatically during installation, but browsers will show security warnings.
+
+**For Production (Required):**
+
+SSL certificates are **mandatory** for production environments. The `laradox:up` command will refuse to start production containers without valid SSL certificates.
 
 > **Windows WSL2 Users**: Run the mkcert command on the Windows side to install certificates in your Windows trust store.
 
@@ -114,7 +122,7 @@ php artisan laradox:up --environment=production --detach
 ./php artisan migrate:fresh --seed
 ```
 
-You're done! Open https://laravel.docker.localhost to view your application.
+You're done! Open https://laravel.docker.localhost to view your application (or http://laravel.docker.localhost if SSL is not configured).
 
 ## Usage
 
@@ -178,6 +186,16 @@ docker compose -f docker-compose.development.yml restart php
 ```
 
 ## Configuration
+
+### Nginx Configuration
+
+Laradox automatically uses the appropriate nginx configuration based on your environment:
+
+- **Development with SSL**: Uses `app-https.conf` (HTTPS with HTTP→HTTPS redirect)
+- **Development without SSL**: Uses `app-http.conf` (HTTP only on port 80)
+- **Production**: Always requires SSL and uses `app-https.conf`
+
+The configuration is automatically selected when you run `php artisan laradox:up`.
 
 ### Environment Variables
 

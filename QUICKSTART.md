@@ -34,7 +34,9 @@ php artisan laradox:install
 php artisan laradox:setup-ssl
 ```
 
-> **Note**: Make sure mkcert is installed first! Download from https://github.com/FiloSottile/mkcert/releases
+> **Development**: SSL is optional. If mkcert is not installed, Laradox will work with HTTP on port 80.
+> 
+> **Production**: SSL is **REQUIRED**. Install mkcert from https://github.com/FiloSottile/mkcert/releases or provide valid SSL certificates.
 
 ### 5. Start Docker Containers
 
@@ -61,7 +63,9 @@ php artisan laradox:up --detach
 
 ## Access Your Application
 
-Open your browser: **https://laravel.docker.localhost**
+Open your browser:
+- **With SSL**: https://laravel.docker.localhost
+- **Without SSL**: http://laravel.docker.localhost
 
 ## Common Commands
 
