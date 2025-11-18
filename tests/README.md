@@ -52,7 +52,7 @@ The test suite covers:
 ## Writing New Tests
 
 1. Extend the `Laradox\Tests\TestCase` class
-2. Use the `/** @test */` annotation or prefix methods with `test_`
+2. Use the `#[Test]` annotation or prefix methods with `test_`
 3. Clean up test artifacts in tearDown (handled automatically by base TestCase)
 4. Mock external dependencies (Docker, mkcert) when needed
 
@@ -66,7 +66,7 @@ use Laradox\Tests\TestCase;
 
 class MyNewTest extends TestCase
 {
-    /** @test */
+    #[Test]
     public function it_does_something(): void
     {
         // Your test code here
@@ -78,7 +78,22 @@ class MyNewTest extends TestCase
 ## Dependencies
 
 - PHPUnit ^10.0|^11.0
-- Orchestra Testbench ^8.0|^9.0 (for Laravel package testing)
+- Orchestra Testbench:
+  - ^8.0 for Laravel 10.x
+  - ^9.0 for Laravel 11.x
+  - ^10.0 for Laravel 12.x
+
+## Test Matrix
+
+The test suite is tested against multiple PHP and Laravel versions in CI:
+
+| Laravel Version | PHP Versions | Testbench Version |
+|----------------|--------------|-------------------|
+| 10.x | 8.2, 8.3 | ^8.0 |
+| 11.x | 8.2, 8.3, 8.4 | ^9.0 |
+| 12.x | 8.2, 8.3, 8.4 | ^10.0 |
+
+**Total:** 8 test combinations running in GitHub Actions
 
 ## CI/CD
 
