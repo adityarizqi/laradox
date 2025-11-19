@@ -81,7 +81,7 @@ services:
     user: root
     command: /usr/bin/supervisord -c /etc/supervisord.conf
     environment:
-      QUEUE_WORKER_CPUS: ${QUEUE_WORKER_CPUS:-2}
+      LARADOX_QUEUE_WORKERS: ${LARADOX_QUEUE_WORKERS:-2}
     healthcheck:
       test: ["CMD", "supervisorctl", "status"]
       interval: 15s
