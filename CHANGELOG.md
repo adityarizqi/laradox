@@ -2,6 +2,12 @@
 
 All notable changes to `laradox` will be documented in this file.
 
+## [Unreleased]
+
+### Changed
+- **BREAKING**: Renamed `QUEUE_WORKER_CPUS` environment variable to `LARADOX_QUEUE_WORKERS` for consistency with LARADOX_* naming convention
+- Updated all references in configuration files, Docker Compose files, and documentation
+
 ## 2.0.3 - 2025-11-19
 
 ### Added
