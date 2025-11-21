@@ -195,9 +195,9 @@ See [CONTRIBUTING.md](CONTRIBUTING.md) for detailed guidelines.
 
 We'd love to hear from you! Share your thoughts:
 
-- **GitHub Issues**: https://github.com/adityarizqi/laradox/issues
-- **Discussions**: https://github.com/adityarizqi/laradox/discussions
-- **Email**: me@gwadit.net
+- **GitHub Issues**: [https://github.com/adityarizqi/laradox/issues](https://github.com/adityarizqi/laradox/issues)
+- **Discussions**: [https://github.com/adityarizqi/laradox/discussions](https://github.com/adityarizqi/laradox/discussions)
+- **Email**: [me@gwadit.net](mailto:me@gwadit.net)
 
 ---
 
