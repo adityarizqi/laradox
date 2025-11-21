@@ -42,7 +42,7 @@ services:
   php:
     <<: [*php, *logging]
     environment:
-      - SERVER_NAME=:8080
+      - SERVER_NAME=:${LARADOX_FRANKENPHP_PORT:-8080}
     healthcheck:
       test: ["CMD", "php", "-v"]
       interval: 30s

@@ -96,6 +96,11 @@ RUN cp $PHP_INI_DIR/php.ini-production $PHP_INI_DIR/php.ini
 
 # FINAL
 FROM ${ENVIRONMENT}
-CMD ["php", "artisan", "octane:frankenphp", "--watch", "--host=0.0.0.0", "--port=8080"]
+ARG ENVIRONMENT
+CMD if [ "$ENVIRONMENT" = "production" ]; then \
+        php artisan octane:frankenphp; \
+    else \
+        php artisan octane:frankenphp --watch; \
+    fi
 WORKDIR /srv
 USER appuser
