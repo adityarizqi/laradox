@@ -17,6 +17,22 @@ This roadmap outlines the planned features, improvements, and milestones for Lar
 
 ---
 
+## 🎯 Version 2.0.x - Production Deployment & SSL Automation
+
+### Performance Enhancements
+- [ ] Nginx optimization
+- [ ] Docker image size optimization
+- [ ] Performance benchmarking tools
+
+### Developer Tools
+- [ ] Add `laradox:logs` command for easy log viewing
+- [ ] Add `laradox:shell` command to enter containers
+- [ ] Add `laradox:status` command for service health checks
+- [ ] Add `laradox:deploy` command for production deployment
+- [ ] Add `laradox:optimize` command for production optimization
+
+---
+
 ## 🎯 Version 2.1.0 - Production Deployment & SSL Automation
 
 ### SSL & Certificate Management (Priority)
@@ -37,13 +53,6 @@ This roadmap outlines the planned features, improvements, and milestones for Lar
 - [ ] Production environment variable validation
 - [ ] Deployment rollback mechanisms
 
-### Developer Tools
-- [ ] Add `laradox:logs` command for easy log viewing
-- [ ] Add `laradox:shell` command to enter containers
-- [ ] Add `laradox:status` command for service health checks
-- [ ] Add `laradox:deploy` command for production deployment
-- [ ] Add `laradox:optimize` command for production optimization
-
 ---
 
 ## 🔧 Version x.x.x - Performance & Monitoring
@@ -57,8 +66,6 @@ This roadmap outlines the planned features, improvements, and milestones for Lar
 ### Performance Enhancements
 - [ ] HTTP/3 support in Nginx
 - [ ] Advanced caching strategies
-- [ ] Docker image size optimization
-- [ ] Performance benchmarking tools
 - [ ] Laravel Octane Swoole support as alternative
 - [ ] CDN integration guides (CloudFlare, Fastly)
 
