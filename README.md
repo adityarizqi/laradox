@@ -384,7 +384,12 @@ LARADOX_HTTP_PORT=8080
 LARADOX_HTTPS_PORT=8443
 ```
 
-Update `docker-compose.*.yml` files accordingly.
+Then restart the containers:
+
+```bash
+php artisan laradox:down
+php artisan laradox:up --detach
+```
 
 ### Containers Already Running
 
