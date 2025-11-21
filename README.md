@@ -169,6 +169,9 @@ php artisan laradox:up --force-ssl=false [--detach]
 
 # Stop containers
 php artisan laradox:down [--environment=development] [--volumes]
+
+# View container logs
+php artisan laradox:logs [service] [--follow] [--tail=100] [--timestamps]
 ```
 
 #### SSL Configuration Options

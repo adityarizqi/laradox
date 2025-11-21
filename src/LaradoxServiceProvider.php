@@ -7,6 +7,7 @@ use Laradox\Console\InstallCommand;
 use Laradox\Console\SetupSSLCommand;
 use Laradox\Console\UpCommand;
 use Laradox\Console\DownCommand;
+use Laradox\Console\LogsCommand;
 
 class LaradoxServiceProvider extends ServiceProvider
 {
@@ -22,6 +23,7 @@ class LaradoxServiceProvider extends ServiceProvider
                 SetupSSLCommand::class,
                 UpCommand::class,
                 DownCommand::class,
+                LogsCommand::class,
             ]);
 
             // Publish configuration

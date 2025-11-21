@@ -104,8 +104,18 @@ php artisan laradox:up --force-ssl=false --detach
 # Stop containers
 php artisan laradox:down
 
-# View logs
-docker compose -f docker-compose.development.yml logs -f
+# View logs (list all services)
+php artisan laradox:logs
+
+# View logs for specific service
+php artisan laradox:logs php
+php artisan laradox:logs nginx
+
+# Follow logs in real-time
+php artisan laradox:logs php --follow
+
+# View last 100 lines
+php artisan laradox:logs php --tail=100
 
 # Run artisan commands
 ./php artisan migrate

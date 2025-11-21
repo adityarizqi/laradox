@@ -25,7 +25,7 @@ This roadmap outlines the planned features, improvements, and milestones for Lar
 - [ ] Performance benchmarking tools
 
 ### Developer Tools
-- [ ] Add `laradox:logs` command for easy log viewing
+- [x] Add `laradox:logs` command for easy log viewing
 - [ ] Add `laradox:shell` command to enter containers
 - [ ] Add `laradox:status` command for service health checks
 - [ ] Add `laradox:deploy` command for production deployment
