@@ -17,7 +17,7 @@ This roadmap outlines the planned features, improvements, and milestones for Lar
 
 ---
 
-## 🎯 Version 2.1.0 - Production Deployment & SSL Automation (Q2 2026)
+## 🎯 Version 2.1.0 - Production Deployment & SSL Automation
 
 ### SSL & Certificate Management (Priority)
 - [ ] **Let's Encrypt integration** for automatic SSL certificates
@@ -37,12 +37,6 @@ This roadmap outlines the planned features, improvements, and milestones for Lar
 - [ ] Production environment variable validation
 - [ ] Deployment rollback mechanisms
 
-### Framework Expansion (Priority)
-- [ ] **WordPress + FrankenPHP** optimized setup
-- [ ] **CodeIgniter 4** support
-- [ ] Generic PHP application templates
-- [ ] Framework detection and auto-configuration
-
 ### Developer Tools
 - [ ] Add `laradox:logs` command for easy log viewing
 - [ ] Add `laradox:shell` command to enter containers
@@ -52,7 +46,13 @@ This roadmap outlines the planned features, improvements, and milestones for Lar
 
 ---
 
-## 🔧 Version 2.2.0 - Performance & Monitoring (Q4 2026)
+## 🔧 Version x.x.x - Performance & Monitoring
+
+### Framework Expansion (Priority)
+- [ ] **WordPress + FrankenPHP** optimized setup
+- [ ] **CodeIgniter 4** support
+- [ ] Generic PHP application templates
+- [ ] Framework detection and auto-configuration
 
 ### Performance Enhancements
 - [ ] HTTP/3 support in Nginx
