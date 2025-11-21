@@ -169,6 +169,9 @@ php artisan laradox:up --force-ssl=false [--detach]
 
 # Stop containers
 php artisan laradox:down [--environment=development] [--volumes]
+
+# View container logs
+php artisan laradox:logs [service] [--follow] [--tail=100] [--timestamps]
 ```
 
 #### SSL Configuration Options
@@ -261,7 +264,7 @@ LARADOX_HTTPS_PORT=443
 LARADOX_FRANKENPHP_PORT=8080
 
 # Queue workers (production)
-QUEUE_WORKER_CPUS=2
+LARADOX_QUEUE_WORKERS=2
 
 # User IDs (for file permissions)
 LARADOX_USER_ID=1000
@@ -381,7 +384,12 @@ LARADOX_HTTP_PORT=8080
 LARADOX_HTTPS_PORT=8443
 ```
 
-Update `docker-compose.*.yml` files accordingly.
+Then restart the containers:
+
+```bash
+php artisan laradox:down
+php artisan laradox:up --detach
+```
 
 ### Containers Already Running
 

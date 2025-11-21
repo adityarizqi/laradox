@@ -59,7 +59,7 @@ return [
     | Number of queue worker processes in production.
     |
     */
-    'queue_workers' => env('QUEUE_WORKER_CPUS', 2),
+    'queue_workers' => env('LARADOX_QUEUE_WORKERS', 2),
 
     /*
     |--------------------------------------------------------------------------
