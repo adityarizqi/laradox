@@ -191,8 +191,6 @@ See [CONTRIBUTING.md](CONTRIBUTING.md) for detailed guidelines.
 
 ---
 
----
-
 ## 📞 Feedback & Suggestions
 
 We'd love to hear from you! Share your thoughts:
