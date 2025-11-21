@@ -144,8 +144,6 @@ class UpCommand extends Command
             $this->line('  - Permission issues: Ensure Docker has proper permissions');
             $this->line('  - Resource limits: Check Docker resource allocation');
             $this->newLine();
-            $this->comment('Check logs with: php artisan laradox:logs');
-            $this->newLine();
         }
 
         return $returnCode === 0 ? self::SUCCESS : self::FAILURE;
