@@ -422,4 +422,44 @@ trait ChecksDocker
             exec('start "" ' . escapeshellarg($url));
         }
     }
+
+    /**
+     * Check if containers are running for the given compose file.
+     *
+     * @param string $composeFile
+     * @return bool
+     */
+    protected function areContainersRunning(string $composeFile): bool
+    {
+        $command = sprintf(
+            'docker compose -f %s ps --quiet 2>/dev/null',
+            escapeshellarg($composeFile)
+        );
+
+        exec($command, $output, $returnCode);
+
+        return $returnCode === 0 && !empty($output);
+    }
+
+    /**
+     * Get list of available services from the compose file.
+     *
+     * @param string $composeFile
+     * @return array
+     */
+    protected function getAvailableServices(string $composeFile): array
+    {
+        $command = sprintf(
+            'docker compose -f %s config --services 2>/dev/null',
+            escapeshellarg($composeFile)
+        );
+
+        exec($command, $output, $returnCode);
+
+        if ($returnCode !== 0 || empty($output)) {
+            return ['nginx', 'php', 'node', 'scheduler', 'queue'];
+        }
+
+        return $output;
+    }
 }

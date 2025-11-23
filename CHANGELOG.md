@@ -2,6 +2,8 @@
 
 All notable changes to `laradox` will be documented in this file.
 
+## [Unreleased]
+
 ## 2.0.3 - 2025-11-19
 
 ### Added
@@ -74,7 +76,7 @@ All notable changes to `laradox` will be documented in this file.
 - Enhanced maintainability across multiple projects
 - Standardized best practices for Laravel + Docker
 
-## 1.0.0 - 2024-08-12
+## 1.0.0 - 2025-08-12
 
 ### Added
 - Initial release

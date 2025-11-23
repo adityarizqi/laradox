@@ -22,8 +22,8 @@ services:
     image: nginx:1.27-alpine
     restart: unless-stopped
     ports:
-      - "80:80"
-      - "443:443"
+      - "${LARADOX_HTTP_PORT:-80}:80"
+      - "${LARADOX_HTTPS_PORT:-443}:443"
     environment:
       - LARADOX_DOMAIN=${LARADOX_DOMAIN:-laravel.docker.localhost}
     volumes:
@@ -42,7 +42,7 @@ services:
   php:
     <<: [*php, *logging]
     environment:
-      - SERVER_NAME=:8080
+      - SERVER_NAME=:${LARADOX_FRANKENPHP_PORT:-8080}
     healthcheck:
       test: ["CMD", "php", "-v"]
       interval: 30s
@@ -81,7 +81,7 @@ services:
     user: root
     command: /usr/bin/supervisord -c /etc/supervisord.conf
     environment:
-      QUEUE_WORKER_CPUS: ${QUEUE_WORKER_CPUS:-2}
+      LARADOX_QUEUE_WORKERS: ${LARADOX_QUEUE_WORKERS:-2}
     healthcheck:
       test: ["CMD", "supervisorctl", "status"]
       interval: 15s

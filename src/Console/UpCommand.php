@@ -241,23 +241,4 @@ class UpCommand extends Command
         copy($sourcePath, $targetPath);
         $this->line("Using nginx configuration: {$configFile}");
     }
-
-    /**
-     * Determine whether any containers defined by the given Docker Compose file are currently running.
-     *
-     * @param string $composeFile Path to the Docker Compose file to check.
-     * @return bool `true` if one or more containers for the compose file are running, `false` otherwise.
-     */
-    protected function areContainersRunning(string $composeFile): bool
-    {
-        $command = sprintf(
-            'docker compose -f %s ps --quiet 2>/dev/null',
-            escapeshellarg($composeFile)
-        );
-
-        exec($command, $output, $returnCode);
-
-        // If command succeeds and has output, containers exist
-        return $returnCode === 0 && !empty($output);
-    }
 }

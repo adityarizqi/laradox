@@ -106,6 +106,7 @@ php artisan laradox:up --detach
 | `laradox:setup-ssl` | Generate SSL certificates using mkcert |
 | `laradox:up` | Start Docker containers |
 | `laradox:down` | Stop Docker containers |
+| `laradox:logs` | View container logs with filtering options |
 
 ## Services Included
 
