@@ -40,13 +40,13 @@ jobs:
           DATE="${{ steps.date.outputs.date }}"
           
           # Get release body
-          RELEASE_BODY=$(cat << 'EOF'
+          RELEASE_BODY=$(cat <<- 'EOF'
           ${{ github.event.release.body }}
           EOF
           )
           
           # Create temporary file with new changelog entry
-          cat > /tmp/new_entry.md << EOF
+          cat > /tmp/new_entry.md <<- EOF
           ## ${VERSION} - ${DATE}
           
           ${RELEASE_BODY}

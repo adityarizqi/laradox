@@ -3,9 +3,11 @@
 namespace Laradox\Console;
 
 use Illuminate\Console\Command;
+use Laradox\Console\Concerns\ChecksDocker;
 
 class LogsCommand extends Command
 {
+    use ChecksDocker;
     /**
      * The name and signature of the console command.
      *
@@ -76,6 +78,11 @@ class LogsCommand extends Command
         }
 
         if ($this->option('tail')) {
+            $tail = $this->option('tail');
+            if (!is_numeric($tail) || $tail < 1) {
+                $this->error('The --tail option must be a positive integer.');
+                return self::FAILURE;
+            }
             $command .= sprintf(' --tail=%s', escapeshellarg($this->option('tail')));
         }
 
@@ -92,45 +99,5 @@ class LogsCommand extends Command
         passthru($command, $returnCode);
 
         return $returnCode === 0 ? self::SUCCESS : self::FAILURE;
-    }
-
-    /**
-     * Check if containers are running for the given compose file.
-     *
-     * @param string $composeFile
-     * @return bool
-     */
-    protected function areContainersRunning(string $composeFile): bool
-    {
-        $command = sprintf(
-            'docker compose -f %s ps --quiet 2>/dev/null',
-            escapeshellarg($composeFile)
-        );
-
-        exec($command, $output, $returnCode);
-
-        return $returnCode === 0 && !empty($output);
-    }
-
-    /**
-     * Get list of available services from the compose file.
-     *
-     * @param string $composeFile
-     * @return array
-     */
-    protected function getAvailableServices(string $composeFile): array
-    {
-        $command = sprintf(
-            'docker compose -f %s config --services 2>/dev/null',
-            escapeshellarg($composeFile)
-        );
-
-        exec($command, $output, $returnCode);
-
-        if ($returnCode !== 0 || empty($output)) {
-            return ['nginx', 'php', 'node', 'scheduler', 'queue'];
-        }
-
-        return $output;
     }
 }
