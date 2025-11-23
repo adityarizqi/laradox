@@ -4,6 +4,35 @@ All notable changes to `laradox` will be documented in this file.
 
 ## [Unreleased]
 
+## 2.0.5 - 2025-11-23
+
+### Added
+- New `laradox:logs` command for viewing container logs with filtering options
+  - Support for viewing specific service logs (nginx, php, node, scheduler, queue)
+  - `--follow` option to follow logs in real-time
+  - `--tail` option to limit number of lines displayed
+  - `--timestamps` option to show log timestamps
+  - Automatic container running detection
+- Comprehensive test suite for LogsCommand (19 feature tests, 11 unit tests)
+
+### Fixed
+- Helper scripts (`./php`, `./composer`, `./npm`) now properly default to development environment when `LARADOX_ENV` is not set in `.env`
+- Removed incorrect user flags (`-u composer`, `-u node`) that caused "no matching entries in passwd file" errors
+- Helper scripts now use correct container users (php container runs as `appuser` by default, node service already configured with `user: node`)
+
+### Changed
+- **BREAKING**: Renamed `QUEUE_WORKER_CPUS` environment variable to `LARADOX_QUEUE_WORKERS` for consistency with LARADOX_* naming convention
+- FrankenPHP port configuration is now dynamic via `LARADOX_FRANKENPHP_PORT` environment variable
+- Removed hardcoded `--host` and `--port` from Dockerfile CMD, now uses environment variables
+- Production environment no longer uses `--watch` flag for better performance
+- Updated all references in configuration files, Docker Compose files, and documentation
+
+### Improved
+- FrankenPHP configuration now fully customizable via `.env` file
+- Enhanced error messages with troubleshooting tips for common issues (port conflicts, permissions)
+- Updated documentation for `laradox:logs` command in README.md, QUICKSTART.md, and PACKAGE_STRUCTURE.md
+
+
 ## 2.0.3 - 2025-11-19
 
 ### Added
