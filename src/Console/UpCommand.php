@@ -130,20 +130,6 @@ class UpCommand extends Command
             $domain = config('laradox.domain');
             $protocol = $sslExists && $forceSsl !== 'false' ? 'https' : 'http';
             $this->line("Visit: {$protocol}://{$domain}");
-        } elseif ($returnCode !== 0) {
-            $this->newLine();
-            $this->error('✗ Failed to start containers!');
-            $this->line('Stopping any running containers...');
-            
-            $stopCommand = sprintf('docker compose -f %s down', escapeshellarg($composeFile));
-            passthru($stopCommand);
-            
-            $this->newLine();
-            $this->comment('Common issues:');
-            $this->line('  - Port conflict: Check if ports are already in use');
-            $this->line('  - Permission issues: Ensure Docker has proper permissions');
-            $this->line('  - Resource limits: Check Docker resource allocation');
-            $this->newLine();
         }
 
         return $returnCode === 0 ? self::SUCCESS : self::FAILURE;
