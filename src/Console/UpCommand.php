@@ -77,6 +77,17 @@ class UpCommand extends Command
         // Copy the appropriate nginx config
         $this->copyNginxConfig($nginxConfigSource);
 
+        // Verify nginx config was copied successfully
+        $targetConfigPath = base_path('docker/nginx/conf.d/app.conf');
+        if (!file_exists($targetConfigPath)) {
+            $this->newLine();
+            $this->error('✗ Failed to configure nginx!');
+            $this->line('The nginx configuration file was not created successfully.');
+            $this->line("Expected at: {$targetConfigPath}");
+            $this->newLine();
+            return self::FAILURE;
+        }
+
         // Check if domain is added to hosts file (for non-.localhost domains)
         if (!$this->checkHostsFileConfirmation()) {
             return self::FAILURE;

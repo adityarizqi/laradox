@@ -52,6 +52,11 @@ class UpCommandTest extends FeatureTestCase
         $this->createTestSslDirectory();
         File::put(config('laradox.ssl.cert_path'), 'dummy cert');
         File::put(config('laradox.ssl.key_path'), 'dummy key');
+        
+        // Create nginx configs
+        $httpsConfigPath = base_path('docker/nginx/conf.d/app-https.conf');
+        File::ensureDirectoryExists(dirname($httpsConfigPath));
+        File::put($httpsConfigPath, 'https config');
 
         $this->artisan('laradox:up', ['--detach' => true])
             ->expectsOutput('Starting Laradox (development environment)...')
@@ -65,6 +70,11 @@ class UpCommandTest extends FeatureTestCase
         $this->createTestSslDirectory();
         File::put(config('laradox.ssl.cert_path'), 'dummy cert');
         File::put(config('laradox.ssl.key_path'), 'dummy key');
+        
+        // Create nginx configs
+        $httpsConfigPath = base_path('docker/nginx/conf.d/app-https.conf');
+        File::ensureDirectoryExists(dirname($httpsConfigPath));
+        File::put($httpsConfigPath, 'https config');
 
         $this->artisan('laradox:up', ['--build' => true])
             ->expectsOutput('Starting Laradox (development environment)...')
@@ -77,8 +87,11 @@ class UpCommandTest extends FeatureTestCase
         $this->createTestDockerComposeFile();
         $this->createTestSslDirectory();
         File::put(config('laradox.ssl.cert_path'), 'dummy cert');
-        File::put(config('laradox.ssl.key_path'), 'dummy key');
-
+        File::put(config('laradox.ssl.key_path'), 'dummy key');        
+        // Create nginx configs
+        $httpsConfigPath = base_path('docker/nginx/conf.d/app-https.conf');
+        File::ensureDirectoryExists(dirname($httpsConfigPath));
+        File::put($httpsConfigPath, 'https config');
         $this->artisan('laradox:up')
             ->expectsOutput('Starting Laradox (development environment)...')
             ->doesntExpectOutput('Docker Compose file not found');
