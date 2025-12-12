@@ -4,6 +4,29 @@ All notable changes to `laradox` will be documented in this file.
 
 ## [Unreleased]
 
+## 2.0.6 - 2025-12-12
+
+### Added
+- New `laradox:shell` command for interactive container access
+  - Enter any container interactively (php, nginx, node, scheduler, queue)
+  - Support for multiple shells (sh, bash, zsh) with automatic detection and fallback
+  - `--shell` option to specify preferred shell (defaults to sh)
+  - `--user` option to run shell as specific user
+  - `--environment` option for production/development environments
+  - Automatic service validation (checks if service exists and is running)
+  - Intelligent shell detection with graceful fallback to available shells
+  - Comprehensive test suite (10 feature tests, 15 unit tests)
+- Hosts file confirmation prompt for custom domains in `laradox:up` command
+  - Automatically skips prompt for `.localhost` domains (work without hosts file modification)
+  - For custom domains, displays instructions and confirmation prompt
+  - Platform-specific guidance for macOS, Linux, and Windows
+  - Prevents common deployment issues from forgotten hosts file entries
+- Nginx configuration validation in `laradox:up` command
+  - Verifies `app.conf` file exists after copying configuration
+  - Prevents containers from starting with missing/invalid nginx config
+  - Shows clear error messages with expected file path
+
+
 ## 2.0.5 - 2025-11-23
 
 ### Added
