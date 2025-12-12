@@ -10,7 +10,7 @@ This roadmap outlines the planned features, improvements, and milestones for Lar
 
 #### Developer Tools
 - [x] `laradox:logs` - View container logs with filtering ✅ (v2.0.4)
-- [ ] `laradox:shell` - Enter containers interactively
+- [x] `laradox:shell` - Enter containers interactively ✅ (v2.0.6)
 - [ ] `laradox:status` - Service health checks and monitoring
 - [ ] `laradox:deploy` - Production deployment automation
 - [ ] `laradox:optimize` - Production optimization tooling

@@ -17,7 +17,8 @@ class UpCommand extends Command
                             {--environment=development : Environment (development|production)}
                             {--d|detach : Run in detached mode}
                             {--build : Build images before starting}
-                            {--force-ssl= : Force SSL usage (true=HTTPS required, false=HTTP only, default=auto-detect)}';
+                            {--force-ssl= : Force SSL usage (true=HTTPS required, false=HTTP only, default=auto-detect)}
+                            {--skip-hosts-check : Skip hosts file confirmation for custom domains}';
 
     /**
      * The console command description.
@@ -75,7 +76,14 @@ class UpCommand extends Command
         }
 
         // Copy the appropriate nginx config
-        $this->copyNginxConfig($nginxConfigSource);
+        if (!$this->copyNginxConfig($nginxConfigSource)) {
+            return self::FAILURE;
+        }
+
+        // Check if domain is added to hosts file (for non-.localhost domains)
+        if (!$this->checkHostsFileConfirmation()) {
+            return self::FAILURE;
+        }
 
         // Check if containers are already running
         if ($this->areContainersRunning($composeFile)) {
@@ -222,23 +230,96 @@ class UpCommand extends Command
     /**
      * Install the chosen nginx configuration into docker/nginx/conf.d/app.conf.
      *
-     * If the named source file does not exist, the method warns and leaves the current
-     * configuration unchanged.
+     * If the named source file does not exist or the copy operation fails,
+     * the method returns false.
      *
      * @param string $configFile Filename of the nginx configuration to copy (e.g. `app-https.conf`).
+     * @return bool True on successful copy, false on failure.
      */
-    protected function copyNginxConfig(string $configFile): void
+    protected function copyNginxConfig(string $configFile): bool
     {
         $sourcePath = base_path("docker/nginx/conf.d/{$configFile}");
         $targetPath = base_path('docker/nginx/conf.d/app.conf');
 
         if (!file_exists($sourcePath)) {
-            $this->warn("Configuration file not found: {$sourcePath}");
-            $this->line('Using existing configuration...');
-            return;
+            $this->newLine();
+            $this->error('✗ Failed to configure nginx!');
+            $this->line("Configuration file not found: {$sourcePath}");
+            $this->newLine();
+            return false;
         }
 
-        copy($sourcePath, $targetPath);
+        $copyResult = copy($sourcePath, $targetPath);
+        
+        if (!$copyResult) {
+            $this->newLine();
+            $this->error('✗ Failed to configure nginx!');
+            $this->line('Could not copy nginx configuration file.');
+            $this->line("Source: {$sourcePath}");
+            $this->line("Target: {$targetPath}");
+            $this->newLine();
+            return false;
+        }
+
         $this->line("Using nginx configuration: {$configFile}");
+        return true;
+    }
+
+    /**
+     * Check if the domain requires /etc/hosts entry and confirm with the user.
+     *
+     * For domains not ending with .localhost, prompts the user to confirm they have
+     * added the domain to their /etc/hosts file.
+     *
+     * @return bool True if the check passes or user confirms, false if user cancels.
+     */
+    protected function checkHostsFileConfirmation(): bool
+    {
+        $domain = config('laradox.domain');
+        
+        // Skip check for .localhost domains (they work without hosts file)
+        if (str_ends_with($domain, '.localhost')) {
+            return true;
+        }
+
+        // Skip check if --skip-hosts-check flag is provided
+        if ($this->option('skip-hosts-check')) {
+            return true;
+        }
+
+        // If running non-interactively without --skip-hosts-check, fail with clear error
+        if (!$this->input->isInteractive()) {
+            $this->newLine();
+            $this->error('✗ Custom domain requires hosts file confirmation!');
+            $this->line("Domain: {$domain}");
+            $this->newLine();
+            $this->line('Running in non-interactive mode with a custom domain requires one of:');
+            $this->line('  1. Use --skip-hosts-check flag if hosts file is already configured');
+            $this->line('  2. Run interactively to confirm hosts file configuration');
+            $this->line('  3. Use a .localhost domain (e.g., myapp.docker.localhost)');
+            $this->newLine();
+            $this->comment('To configure hosts file, add this line:');
+            $this->line("  127.0.0.1 {$domain}");
+            $this->newLine();
+            return false;
+        }
+
+        $this->newLine();
+        $this->warn("⚠ Using custom domain: {$domain}");
+        $this->line('Custom domains require an entry in your /etc/hosts file.');
+        $this->newLine();
+        $this->comment('Add this line to /etc/hosts:');
+        $this->line("  127.0.0.1 {$domain}");
+        $this->newLine();
+        $this->comment('On macOS/Linux: sudo nano /etc/hosts');
+        $this->comment('On Windows: Edit C:\Windows\System32\drivers\etc\hosts as Administrator');
+        $this->newLine();
+
+        if (!$this->confirm('Have you added the domain to your hosts file?', false)) {
+            $this->info('Cancelled. Please add the domain to your hosts file first.');
+            return false;
+        }
+
+        return true;
     }
 }

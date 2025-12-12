@@ -172,6 +172,9 @@ php artisan laradox:down [--environment=development] [--volumes]
 
 # View container logs
 php artisan laradox:logs [service] [--follow] [--tail=100] [--timestamps]
+
+# Enter container shell interactively
+php artisan laradox:shell [service] [--environment=development] [--user=www-data] [--shell=bash]
 ```
 
 #### SSL Configuration Options
@@ -204,6 +207,31 @@ The helper scripts allow you to run commands inside containers without entering 
 ./php artisan queue:work
 ./php artisan tinker
 ```
+
+### Interactive Shell Access
+
+Enter containers interactively for debugging, exploration, or manual operations:
+
+```bash
+# Enter PHP container (default with sh shell)
+php artisan laradox:shell
+
+# Enter specific service
+php artisan laradox:shell nginx
+php artisan laradox:shell node
+
+# Use different shell (automatically falls back to sh if unavailable)
+php artisan laradox:shell --shell=bash
+php artisan laradox:shell --shell=zsh
+
+# Run as specific user
+php artisan laradox:shell --user=www-data
+
+# Production environment
+php artisan laradox:shell --environment=production
+```
+
+Available services: `php`, `nginx`, `node`, `scheduler`, `queue`
 
 ### Docker Compose Commands
 
