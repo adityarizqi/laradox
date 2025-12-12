@@ -77,6 +77,11 @@ class UpCommand extends Command
         // Copy the appropriate nginx config
         $this->copyNginxConfig($nginxConfigSource);
 
+        // Check if domain is added to hosts file (for non-.localhost domains)
+        if (!$this->checkHostsFileConfirmation()) {
+            return self::FAILURE;
+        }
+
         // Check if containers are already running
         if ($this->areContainersRunning($composeFile)) {
             $this->newLine();
@@ -240,5 +245,41 @@ class UpCommand extends Command
 
         copy($sourcePath, $targetPath);
         $this->line("Using nginx configuration: {$configFile}");
+    }
+
+    /**
+     * Check if the domain requires /etc/hosts entry and confirm with the user.
+     *
+     * For domains not ending with .localhost, prompts the user to confirm they have
+     * added the domain to their /etc/hosts file.
+     *
+     * @return bool True if the check passes or user confirms, false if user cancels.
+     */
+    protected function checkHostsFileConfirmation(): bool
+    {
+        $domain = config('laradox.domain');
+        
+        // Skip check for .localhost domains (they work without hosts file)
+        if (str_ends_with($domain, '.localhost')) {
+            return true;
+        }
+
+        $this->newLine();
+        $this->warn("⚠ Using custom domain: {$domain}");
+        $this->line('Custom domains require an entry in your /etc/hosts file.');
+        $this->newLine();
+        $this->comment('Add this line to /etc/hosts:');
+        $this->line("  127.0.0.1 {$domain}");
+        $this->newLine();
+        $this->comment('On macOS/Linux: sudo nano /etc/hosts');
+        $this->comment('On Windows: Edit C:\Windows\System32\drivers\etc\hosts as Administrator');
+        $this->newLine();
+
+        if (!$this->confirm('Have you added the domain to your hosts file?', false)) {
+            $this->info('Cancelled. Please add the domain to your hosts file first.');
+            return false;
+        }
+
+        return true;
     }
 }
