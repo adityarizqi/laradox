@@ -163,8 +163,9 @@ class ShellCommand extends Command
         }
 
         foreach ($shellsToTry as $shell) {
+            // Use POSIX-safe 'command -v' instead of 'which' for portability
             $testCommand = sprintf(
-                'docker compose -f %s exec -T %s which %s 2>/dev/null',
+                'docker compose -f %s exec -T %s sh -lc "command -v %s" 2>/dev/null',
                 escapeshellarg($composeFile),
                 escapeshellarg($service),
                 escapeshellarg($shell)
@@ -172,7 +173,8 @@ class ShellCommand extends Command
 
             exec($testCommand, $output, $returnCode);
 
-            if ($returnCode === 0 && !empty($output)) {
+            // Zero exit status indicates the shell is available
+            if ($returnCode === 0) {
                 return $shell;
             }
         }

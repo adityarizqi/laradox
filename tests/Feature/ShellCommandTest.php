@@ -21,7 +21,8 @@ class ShellCommandTest extends FeatureTestCase
     {
         $this->createTestDockerComposeFile('production');
 
-        $command = $this->artisan('laradox:shell', ['--environment' => 'production']);
+        $this->artisan('laradox:shell', ['--environment' => 'production'])
+            ->assertExitCode(1); // Will fail since containers aren't running, but confirms option accepted
 
         // The command will check for the production compose file
         $this->assertTrue(File::exists(base_path('docker-compose.production.yml')));
@@ -32,7 +33,8 @@ class ShellCommandTest extends FeatureTestCase
     {
         $this->createTestDockerComposeFile('development');
 
-        $command = $this->artisan('laradox:shell');
+        $this->artisan('laradox:shell')
+            ->assertExitCode(1); // Will fail since containers aren't running, but confirms default env used
 
         // Verify the command tried to use development file
         $this->assertTrue(File::exists(base_path('docker-compose.development.yml')));
@@ -50,65 +52,67 @@ class ShellCommandTest extends FeatureTestCase
     }
 
     #[Test]
-    public function it_uses_php_service_by_default(): void
+    public function it_fails_when_containers_not_running_with_default_service(): void
     {
         $this->createTestDockerComposeFile('development');
 
-        // This will fail because containers are not running, but we verify the default service
+        // Test that command fails early when containers are not running (with default php service)
         $this->artisan('laradox:shell')
             ->expectsOutput('✗ No containers are running!')
             ->assertExitCode(1);
     }
 
     #[Test]
-    public function it_accepts_service_argument(): void
+    public function it_fails_when_containers_not_running_with_custom_service(): void
     {
         $this->createTestDockerComposeFile('development');
 
-        // This will fail because containers are not running, but we verify the argument is accepted
+        // Test that command fails early when containers are not running (even with custom service specified)
         $this->artisan('laradox:shell', ['service' => 'nginx'])
             ->expectsOutput('✗ No containers are running!')
             ->assertExitCode(1);
     }
 
     #[Test]
-    public function it_accepts_user_option(): void
+    public function it_fails_when_containers_not_running_with_user_option(): void
     {
         $this->createTestDockerComposeFile('development');
 
+        // Test that command fails early when containers are not running (with user option)
         $this->artisan('laradox:shell', ['service' => 'php', '--user' => 'www-data'])
             ->expectsOutput('✗ No containers are running!')
             ->assertExitCode(1);
     }
 
     #[Test]
-    public function it_accepts_shell_option(): void
+    public function it_fails_when_containers_not_running_with_shell_option(): void
     {
         $this->createTestDockerComposeFile('development');
 
+        // Test that command fails early when containers are not running (with shell option)
         $this->artisan('laradox:shell', ['service' => 'php', '--shell' => 'sh'])
             ->expectsOutput('✗ No containers are running!')
             ->assertExitCode(1);
     }
 
     #[Test]
-    public function it_uses_sh_as_default_shell(): void
+    public function it_fails_when_containers_not_running_with_default_shell(): void
     {
         $this->createTestDockerComposeFile('development');
 
-        // Default shell should be sh
+        // Test that command fails early when containers are not running (with default shell)
         $this->artisan('laradox:shell')
             ->expectsOutput('✗ No containers are running!')
             ->assertExitCode(1);
     }
 
     #[Test]
-    public function it_validates_service_exists_in_compose_file(): void
+    public function it_fails_when_containers_not_running_before_validating_service(): void
     {
         $this->createTestDockerComposeFile('development');
 
-        // Test with a non-existent service
-        // Note: This will show "containers not running" first since we can't mock docker
+        // Test that command checks container status before validating service existence
+        // (Would show service validation error only if containers were running)
         $this->artisan('laradox:shell', ['service' => 'nonexistent'])
             ->expectsOutput('✗ No containers are running!')
             ->assertExitCode(1);
