@@ -213,15 +213,15 @@ The helper scripts allow you to run commands inside containers without entering 
 Enter containers interactively for debugging, exploration, or manual operations:
 
 ```bash
-# Enter PHP container (default)
+# Enter PHP container (default with sh shell)
 php artisan laradox:shell
 
 # Enter specific service
 php artisan laradox:shell nginx
 php artisan laradox:shell node
 
-# Use different shell
-php artisan laradox:shell --shell=sh
+# Use different shell (automatically falls back to sh if unavailable)
+php artisan laradox:shell --shell=bash
 php artisan laradox:shell --shell=zsh
 
 # Run as specific user

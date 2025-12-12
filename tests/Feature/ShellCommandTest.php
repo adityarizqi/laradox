@@ -92,11 +92,11 @@ class ShellCommandTest extends FeatureTestCase
     }
 
     #[Test]
-    public function it_uses_bash_as_default_shell(): void
+    public function it_uses_sh_as_default_shell(): void
     {
         $this->createTestDockerComposeFile('development');
 
-        // Default shell should be bash
+        // Default shell should be sh
         $this->artisan('laradox:shell')
             ->expectsOutput('✗ No containers are running!')
             ->assertExitCode(1);

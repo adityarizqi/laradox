@@ -70,7 +70,7 @@ class ShellCommandTest extends TestCase
         $this->assertTrue($definition->hasOption('shell'));
         
         $option = $definition->getOption('shell');
-        $this->assertEquals('bash', $option->getDefault());
+        $this->assertEquals('sh', $option->getDefault());
     }
 
     #[Test]
@@ -131,13 +131,13 @@ class ShellCommandTest extends TestCase
     }
 
     #[Test]
-    public function shell_option_has_bash_default(): void
+    public function shell_option_has_sh_default(): void
     {
         $command = new ShellCommand();
         $definition = $command->getDefinition();
         
         $option = $definition->getOption('shell');
-        $this->assertEquals('bash', $option->getDefault());
+        $this->assertEquals('sh', $option->getDefault());
     }
 
     #[Test]
@@ -169,6 +169,17 @@ class ShellCommandTest extends TestCase
         $this->assertTrue(
             method_exists($command, 'isServiceRunning'),
             'ShellCommand should have isServiceRunning method'
+        );
+    }
+
+    #[Test]
+    public function it_has_detect_available_shell_method(): void
+    {
+        $command = new ShellCommand();
+        
+        $this->assertTrue(
+            method_exists($command, 'detectAvailableShell'),
+            'ShellCommand should have detectAvailableShell method'
         );
     }
 }

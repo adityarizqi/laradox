@@ -17,7 +17,7 @@ class ShellCommand extends Command
                             {service=php : Service name (nginx, php, node, scheduler, queue)}
                             {--environment=development : Environment (development|production)}
                             {--user= : User to run the shell as}
-                            {--shell=bash : Shell to use (bash, sh, zsh)}';
+                            {--shell=sh : Shell to use (sh, bash, zsh)}';
 
     /**
      * The console command description.
@@ -87,8 +87,17 @@ class ShellCommand extends Command
             return self::FAILURE;
         }
 
+        // Detect available shell in the container
+        $requestedShell = $this->option('shell');
+        $availableShell = $this->detectAvailableShell($composeFile, $service, $requestedShell);
+
+        if (!$availableShell) {
+            $this->error("No shell found in '{$service}' container.");
+            $this->line('Tried: ' . $requestedShell . ', sh');
+            return self::FAILURE;
+        }
+
         // Build the shell command
-        $shell = $this->option('shell');
         $command = sprintf(
             'docker compose -f %s exec',
             escapeshellarg($composeFile)
@@ -99,9 +108,13 @@ class ShellCommand extends Command
             $command .= sprintf(' --user=%s', escapeshellarg($this->option('user')));
         }
 
-        $command .= sprintf(' %s %s', escapeshellarg($service), escapeshellarg($shell));
+        $command .= sprintf(' %s %s', escapeshellarg($service), escapeshellarg($availableShell));
 
-        $this->info("Entering '{$service}' container with {$shell}...");
+        $shellInfo = $availableShell !== $requestedShell 
+            ? "{$availableShell} (fallback from {$requestedShell})" 
+            : $availableShell;
+
+        $this->info("Entering '{$service}' container with {$shellInfo}...");
         $this->comment('Type "exit" to leave the container shell.');
         $this->newLine();
 
@@ -127,5 +140,43 @@ class ShellCommand extends Command
         exec($command, $output, $returnCode);
 
         return $returnCode === 0 && in_array($service, $output);
+    }
+
+    /**
+     * Detect which shell is available in the container.
+     *
+     * @param string $composeFile
+     * @param string $service
+     * @param string $preferredShell
+     * @return string|null The available shell path or null if none found
+     */
+    protected function detectAvailableShell(string $composeFile, string $service, string $preferredShell): ?string
+    {
+        $shellsToTry = [$preferredShell];
+        
+        // Add common fallbacks if not already in the list
+        if ($preferredShell !== 'sh') {
+            $shellsToTry[] = 'sh';
+        }
+        if ($preferredShell !== 'bash' && !in_array('bash', $shellsToTry)) {
+            $shellsToTry[] = 'bash';
+        }
+
+        foreach ($shellsToTry as $shell) {
+            $testCommand = sprintf(
+                'docker compose -f %s exec -T %s which %s 2>/dev/null',
+                escapeshellarg($composeFile),
+                escapeshellarg($service),
+                escapeshellarg($shell)
+            );
+
+            exec($testCommand, $output, $returnCode);
+
+            if ($returnCode === 0 && !empty($output)) {
+                return $shell;
+            }
+        }
+
+        return null;
     }
 }
