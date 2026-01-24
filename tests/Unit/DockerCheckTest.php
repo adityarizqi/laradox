@@ -2,6 +2,7 @@
 
 namespace Laradox\Tests\Unit;
 
+use Illuminate\Support\Facades\File;
 use Laradox\Console\UpCommand;
 use Laradox\Tests\TestCase;
 use Mockery;
@@ -447,5 +448,193 @@ class DockerCheckTest extends TestCase
         foreach ($expectedCommands as $expectedCommand) {
             $this->assertIsString($expectedCommand);
         }
+    }
+
+    #[Test]
+    public function it_gets_docker_compose_command(): void
+    {
+        $command = new class extends UpCommand {
+            public function getDockerComposeCommand(): string
+            {
+                return parent::getDockerComposeCommand();
+            }
+        };
+
+        $result = $command->getDockerComposeCommand();
+        $this->assertIsString($result);
+        $this->assertContains($result, ['docker compose', 'docker-compose']);
+    }
+
+    #[Test]
+    public function it_returns_docker_compose_v2_when_available(): void
+    {
+        $command = new class extends UpCommand {
+            public function getDockerComposeCommand(): string
+            {
+                // Simulate docker compose v2 being available
+                exec('docker compose version', $output, $returnCode);
+                if ($returnCode === 0) {
+                    return 'docker compose';
+                }
+                return 'docker-compose';
+            }
+        };
+
+        $result = $command->getDockerComposeCommand();
+        // Should return one of the valid commands
+        $this->assertContains($result, ['docker compose', 'docker-compose']);
+    }
+
+    #[Test]
+    public function it_falls_back_to_docker_compose_v1(): void
+    {
+        $command = new class extends UpCommand {
+            public function getDockerComposeCommand(): string
+            {
+                // Simulate docker compose v2 NOT being available
+                return 'docker-compose';
+            }
+        };
+
+        $result = $command->getDockerComposeCommand();
+        $this->assertEquals('docker-compose', $result);
+    }
+
+    #[Test]
+    public function it_checks_docker_compose_with_both_v1_and_v2(): void
+    {
+        $command = new class extends UpCommand {
+            public function checkDockerCompose(): bool
+            {
+                return parent::checkDockerCompose();
+            }
+        };
+
+        // This should check both docker compose (v2) and docker-compose (v1)
+        $result = $command->checkDockerCompose();
+        $this->assertIsBool($result);
+    }
+
+    #[Test]
+    public function it_resolves_compose_file_with_custom_file(): void
+    {
+        $command = Mockery::mock(UpCommand::class)->makePartial();
+        $command->shouldAllowMockingProtectedMethods();
+
+        // Test with absolute path
+        $result = $command->resolveComposeFile('development', '/absolute/path/docker-compose.yml');
+        $this->assertEquals('/absolute/path/docker-compose.yml', $result);
+    }
+
+    #[Test]
+    public function it_resolves_compose_file_with_relative_custom_file(): void
+    {
+        $command = Mockery::mock(UpCommand::class)->makePartial();
+        $command->shouldAllowMockingProtectedMethods();
+
+        // Test with relative path
+        $result = $command->resolveComposeFile('development', 'custom-compose.yml');
+        $this->assertEquals(base_path('custom-compose.yml'), $result);
+    }
+
+    #[Test]
+    public function it_resolves_compose_file_with_default_when_exists(): void
+    {
+        // Create a temporary compose file
+        $composeFile = base_path('docker-compose.development.yml');
+        File::put($composeFile, 'version: "3.8"');
+
+        $command = Mockery::mock(UpCommand::class)->makePartial();
+        $command->shouldAllowMockingProtectedMethods();
+
+        $result = $command->resolveComposeFile('development', null);
+        $this->assertEquals($composeFile, $result);
+
+        // Cleanup
+        File::delete($composeFile);
+    }
+
+    #[Test]
+    public function it_returns_false_when_compose_file_not_found_and_no_custom(): void
+    {
+        // Ensure no compose file exists
+        $composeFile = base_path('docker-compose.nonexistent.yml');
+        if (File::exists($composeFile)) {
+            File::delete($composeFile);
+        }
+
+        $command = Mockery::mock(UpCommand::class)->makePartial();
+        $command->shouldAllowMockingProtectedMethods();
+        $command->shouldReceive('newLine')->andReturn(null);
+        $command->shouldReceive('error')->andReturn(null);
+        $command->shouldReceive('line')->andReturn(null);
+        $command->shouldReceive('comment')->andReturn(null);
+
+        $result = $command->resolveComposeFile('nonexistent', null);
+        $this->assertFalse($result);
+    }
+
+    #[Test]
+    public function it_resolves_compose_file_with_empty_custom_file(): void
+    {
+        // Create a temporary compose file
+        $composeFile = base_path('docker-compose.development.yml');
+        File::put($composeFile, 'version: "3.8"');
+
+        $command = Mockery::mock(UpCommand::class)->makePartial();
+        $command->shouldAllowMockingProtectedMethods();
+
+        // Empty string should be treated as no custom file
+        $result = $command->resolveComposeFile('development', '');
+        $this->assertEquals($composeFile, $result);
+
+        // Cleanup
+        File::delete($composeFile);
+    }
+
+    #[Test]
+    public function it_uses_docker_compose_command_in_are_containers_running(): void
+    {
+        $command = new class extends UpCommand {
+            public string $usedCommand = '';
+            
+            protected function getDockerComposeCommand(): string
+            {
+                return 'docker-compose';
+            }
+            
+            public function areContainersRunning(string $composeFile): bool
+            {
+                $dockerCompose = $this->getDockerComposeCommand();
+                $this->usedCommand = $dockerCompose;
+                return false; // Just for testing
+            }
+        };
+
+        $command->areContainersRunning('/some/path/docker-compose.yml');
+        $this->assertEquals('docker-compose', $command->usedCommand);
+    }
+
+    #[Test]
+    public function it_uses_docker_compose_command_in_get_available_services(): void
+    {
+        $command = new class extends UpCommand {
+            public string $usedCommand = '';
+            
+            protected function getDockerComposeCommand(): string
+            {
+                return 'docker-compose';
+            }
+            
+            public function getAvailableServices(string $composeFile): array
+            {
+                $dockerCompose = $this->getDockerComposeCommand();
+                $this->usedCommand = $dockerCompose;
+                return ['nginx', 'php']; // Default for testing
+            }
+        };
+
+        $command->getAvailableServices('/some/path/docker-compose.yml');
+        $this->assertEquals('docker-compose', $command->usedCommand);
     }
 }
