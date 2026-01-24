@@ -14,6 +14,7 @@ class DownCommand extends Command
      * @var string
      */
     protected $signature = 'laradox:down 
+                            {--f|file= : Custom Docker Compose file path}
                             {--environment=development : Environment (development|production)}
                             {--volumes : Remove named volumes}';
 
@@ -45,17 +46,26 @@ class DownCommand extends Command
         }
 
         $env = $this->option('environment');
-        $composeFile = base_path("docker-compose.{$env}.yml");
+        $customFile = $this->option('file');
+        
+        // Determine compose file path
+        $composeFile = $this->resolveComposeFile($env, $customFile);
+        if ($composeFile === false) {
+            return self::FAILURE;
+        }
 
         if (!file_exists($composeFile)) {
             $this->error("Docker Compose file not found: {$composeFile}");
             return self::FAILURE;
         }
 
-        $this->info("Stopping Laradox ({$env} environment)...");
+        $composeFileName = basename($composeFile);
+        $this->info("Stopping Laradox using {$composeFileName}...");
 
+        $dockerCompose = $this->getDockerComposeCommand();
         $command = sprintf(
-            'docker compose -f %s down',
+            '%s -f %s down',
+            $dockerCompose,
             escapeshellarg($composeFile)
         );
 

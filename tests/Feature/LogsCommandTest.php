@@ -12,7 +12,7 @@ class LogsCommandTest extends FeatureTestCase
     public function it_fails_when_docker_compose_file_not_found(): void
     {
         $this->artisan('laradox:logs')
-            ->expectsOutput('Docker Compose file not found: ' . base_path('docker-compose.development.yml'))
+            ->expectsOutput('✗ Docker Compose file not found: docker-compose.development.yml')
             ->assertExitCode(1);
     }
 
@@ -142,7 +142,7 @@ class LogsCommandTest extends FeatureTestCase
         // No compose file created
 
         $this->artisan('laradox:logs')
-            ->expectsOutput('Docker Compose file not found: ' . base_path('docker-compose.development.yml'))
+            ->expectsOutput('✗ Docker Compose file not found: docker-compose.development.yml')
             ->assertExitCode(1);
     }
 

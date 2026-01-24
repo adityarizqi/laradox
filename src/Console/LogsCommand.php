@@ -15,6 +15,7 @@ class LogsCommand extends Command
      */
     protected $signature = 'laradox:logs 
                             {service? : Service name (nginx, php, node, scheduler, queue)}
+                            {--file= : Custom Docker Compose file path}
                             {--environment=development : Environment (development|production)}
                             {--f|follow : Follow log output}
                             {--tail= : Number of lines to show from the end of the logs}
@@ -35,7 +36,13 @@ class LogsCommand extends Command
     public function handle(): int
     {
         $env = $this->option('environment');
-        $composeFile = base_path("docker-compose.{$env}.yml");
+        $customFile = $this->option('file');
+        
+        // Determine compose file path
+        $composeFile = $this->resolveComposeFile($env, $customFile);
+        if ($composeFile === false) {
+            return self::FAILURE;
+        }
 
         if (!file_exists($composeFile)) {
             $this->error("Docker Compose file not found: {$composeFile}");
@@ -68,8 +75,10 @@ class LogsCommand extends Command
         }
 
         // Build the logs command
+        $dockerCompose = $this->getDockerComposeCommand();
         $command = sprintf(
-            'docker compose -f %s logs',
+            '%s -f %s logs',
+            $dockerCompose,
             escapeshellarg($composeFile)
         );
 
