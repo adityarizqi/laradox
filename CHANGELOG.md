@@ -4,6 +4,25 @@ All notable changes to `laradox` will be documented in this file.
 
 ## [Unreleased]
 
+## 2.0.7 - 2026-01-24
+
+### New Features
+  1. Added --file option across all CLI commands to specify custom Docker Compose file paths.
+  2. Improved Docker Compose version detection with support for both V2 and V1 with automatic fallback. 
+
+### Bug Fixes
+  1. Corrected environment variable naming in Docker Compose configurations.
+  2. Enhanced error messaging with improved visual formatting and file path clarity.
+
+## What's Changed
+* docs: update changelog for release v2.0.6 by @github-actions[bot] in https://github.com/adityarizqi/laradox/pull/20
+* Update README.md by @adityarizqi in https://github.com/adityarizqi/laradox/pull/21
+* feat: enhance Docker Compose support and error handling by @adityarizqi in https://github.com/adityarizqi/laradox/pull/22
+
+
+**Full Changelog**: https://github.com/adityarizqi/laradox/compare/v2.0.6...v2.0.7
+
+
 ## 2.0.6 - 2025-12-12
 
 ### Added
