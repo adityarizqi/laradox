@@ -23,9 +23,87 @@ trait ChecksDocker
      */
     protected function checkDockerCompose(): bool
     {
+        // Try 'docker compose' first (Docker Compose V2)
         exec('docker compose version', $output, $returnCode);
-        $output = $output ?? [];
+        if ($returnCode === 0) {
+            return true;
+        }
+        // Fallback to 'docker-compose' (Docker Compose V1)
+        exec('docker-compose version', $output, $returnCode);
         return $returnCode === 0;
+    }
+
+    /**
+     * Get the available Docker Compose command.
+     *
+     * Returns 'docker compose' if available (V2), otherwise 'docker-compose' (V1).
+     *
+     * @return string
+     */
+    protected function getDockerComposeCommand(): string
+    {
+        exec('docker compose version', $output, $returnCode);
+        if ($returnCode === 0) {
+            return 'docker compose';
+        }
+        return 'docker-compose';
+    }
+
+    /**
+     * Resolve the Docker Compose file path.
+     *
+     * If a custom file is provided via -f/--file, it will be used.
+     * Otherwise, attempts to find docker-compose.{environment}.yml.
+     * If the default file doesn't exist and no custom file is provided,
+     * prompts the user to specify one using the -f flag.
+     *
+     * @param string $environment The environment (development|production)
+     * @param string|null $customFile Custom compose file path from -f option
+     * @return string|false The resolved compose file path, or false on failure
+     */
+    protected function resolveComposeFile(string $environment, ?string $customFile): string|false
+    {
+        // If custom file is provided, use it (resolve relative to base_path if not absolute)
+        if ($customFile !== null && $customFile !== '') {
+            if (str_starts_with($customFile, '/')) {
+                return $customFile;
+            }
+            return base_path($customFile);
+        }
+
+        // Try default compose file for the environment
+        $defaultFile = base_path("docker-compose.{$environment}.yml");
+        
+        if (file_exists($defaultFile)) {
+            return $defaultFile;
+        }
+
+        // Default file doesn't exist, show helpful error message
+        $this->newLine();
+        $this->error("✗ Docker Compose file not found: docker-compose.{$environment}.yml");
+        $this->newLine();
+        $this->line('The default compose file has been removed or renamed.');
+        $this->line('You can either:');
+        $this->newLine();
+        $this->line('  1. Republish the default compose files:');
+        $this->comment('     php artisan vendor:publish --tag=laradox-docker');
+        $this->newLine();
+        $this->line('  2. Use a custom compose file with the -f option:');
+        $this->comment("     php artisan laradox:up -f docker-compose.yml");
+        $this->comment("     php artisan laradox:up -f my-custom-compose.yml");
+        $this->newLine();
+        
+        // Check if any docker-compose*.yml files exist
+        $existingFiles = glob(base_path('docker-compose*.yml'));
+        if (!empty($existingFiles)) {
+            $this->line('  Available compose files in your project:');
+            foreach ($existingFiles as $file) {
+                $this->comment('     ' . basename($file));
+            }
+            $this->newLine();
+        }
+
+        return false;
     }
 
     /**
@@ -431,8 +509,10 @@ trait ChecksDocker
      */
     protected function areContainersRunning(string $composeFile): bool
     {
+        $dockerCompose = $this->getDockerComposeCommand();
         $command = sprintf(
-            'docker compose -f %s ps --quiet 2>/dev/null',
+            '%s -f %s ps --quiet 2>/dev/null',
+            $dockerCompose,
             escapeshellarg($composeFile)
         );
 
@@ -449,8 +529,10 @@ trait ChecksDocker
      */
     protected function getAvailableServices(string $composeFile): array
     {
+        $dockerCompose = $this->getDockerComposeCommand();
         $command = sprintf(
-            'docker compose -f %s config --services 2>/dev/null',
+            '%s -f %s config --services 2>/dev/null',
+            $dockerCompose,
             escapeshellarg($composeFile)
         );
 

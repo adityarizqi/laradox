@@ -14,6 +14,7 @@ class UpCommand extends Command
      * @var string
      */
     protected $signature = 'laradox:up 
+                            {--f|file= : Custom Docker Compose file path}
                             {--environment=development : Environment (development|production)}
                             {--d|detach : Run in detached mode}
                             {--build : Build images before starting}
@@ -54,7 +55,13 @@ class UpCommand extends Command
         }
 
         $env = $this->option('environment');
-        $composeFile = base_path("docker-compose.{$env}.yml");
+        $customFile = $this->option('file');
+        
+        // Determine compose file path
+        $composeFile = $this->resolveComposeFile($env, $customFile);
+        if ($composeFile === false) {
+            return self::FAILURE;
+        }
 
         if (!file_exists($composeFile)) {
             $this->error("Docker Compose file not found: {$composeFile}");
@@ -98,7 +105,8 @@ class UpCommand extends Command
             }
             
             $this->info('Restarting containers...');
-            $restartCommand = sprintf('docker compose -f %s restart', escapeshellarg($composeFile));
+            $dockerCompose = $this->getDockerComposeCommand();
+            $restartCommand = sprintf('%s -f %s restart', $dockerCompose, escapeshellarg($composeFile));
             passthru($restartCommand, $returnCode);
             
             if ($returnCode === 0) {
@@ -112,10 +120,13 @@ class UpCommand extends Command
             return $returnCode === 0 ? self::SUCCESS : self::FAILURE;
         }
 
-        $this->info("Starting Laradox ({$env} environment)...");
+        $composeFileName = basename($composeFile);
+        $this->info("Starting Laradox using {$composeFileName}...");
 
+        $dockerCompose = $this->getDockerComposeCommand();
         $command = sprintf(
-            'docker compose -f %s up',
+            '%s -f %s up',
+            $dockerCompose,
             escapeshellarg($composeFile)
         );
 

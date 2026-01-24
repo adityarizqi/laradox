@@ -150,4 +150,48 @@ class DownCommandTest extends TestCase
         $this->assertEquals('development', $developmentEnv);
         $this->assertEquals('production', $productionEnv);
     }
+
+    #[Test]
+    public function it_has_file_option(): void
+    {
+        $command = new DownCommand();
+        
+        $definition = $command->getDefinition();
+        $this->assertTrue($definition->hasOption('file'));
+    }
+
+    #[Test]
+    public function it_file_option_has_shortcut_f(): void
+    {
+        $command = new DownCommand();
+        
+        $definition = $command->getDefinition();
+        $option = $definition->getOption('file');
+        $this->assertEquals('f', $option->getShortcut());
+    }
+
+    #[Test]
+    public function it_constructs_command_with_custom_compose_file(): void
+    {
+        $customFile = 'my-custom-compose.yml';
+        $composeFile = base_path($customFile);
+        $command = sprintf('docker-compose -f %s down', escapeshellarg($composeFile));
+        
+        $this->assertStringContainsString('my-custom-compose.yml', $command);
+        $this->assertStringContainsString('down', $command);
+    }
+
+    #[Test]
+    public function it_supports_both_docker_compose_commands(): void
+    {
+        $composeFile = base_path('docker-compose.development.yml');
+        
+        // Test with docker compose (V2)
+        $commandV2 = sprintf('docker compose -f %s down', escapeshellarg($composeFile));
+        $this->assertStringContainsString('docker compose', $commandV2);
+        
+        // Test with docker-compose (V1)
+        $commandV1 = sprintf('docker-compose -f %s down', escapeshellarg($composeFile));
+        $this->assertStringContainsString('docker-compose', $commandV1);
+    }
 }

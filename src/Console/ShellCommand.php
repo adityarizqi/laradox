@@ -15,6 +15,7 @@ class ShellCommand extends Command
      */
     protected $signature = 'laradox:shell 
                             {service=php : Service name (nginx, php, node, scheduler, queue)}
+                            {--f|file= : Custom Docker Compose file path}
                             {--environment=development : Environment (development|production)}
                             {--user= : User to run the shell as}
                             {--shell=sh : Shell to use (sh, bash, zsh)}';
@@ -49,7 +50,13 @@ class ShellCommand extends Command
         }
 
         $env = $this->option('environment');
-        $composeFile = base_path("docker-compose.{$env}.yml");
+        $customFile = $this->option('file');
+        
+        // Determine compose file path
+        $composeFile = $this->resolveComposeFile($env, $customFile);
+        if ($composeFile === false) {
+            return self::FAILURE;
+        }
 
         if (!file_exists($composeFile)) {
             $this->error("Docker Compose file not found: {$composeFile}");
@@ -98,8 +105,10 @@ class ShellCommand extends Command
         }
 
         // Build the shell command
+        $dockerCompose = $this->getDockerComposeCommand();
         $command = sprintf(
-            'docker compose -f %s exec',
+            '%s -f %s exec',
+            $dockerCompose,
             escapeshellarg($composeFile)
         );
 
@@ -132,8 +141,10 @@ class ShellCommand extends Command
      */
     protected function isServiceRunning(string $composeFile, string $service): bool
     {
+        $dockerCompose = $this->getDockerComposeCommand();
         $command = sprintf(
-            'docker compose -f %s ps --services --filter "status=running" 2>/dev/null',
+            '%s -f %s ps --services --filter "status=running" 2>/dev/null',
+            $dockerCompose,
             escapeshellarg($composeFile)
         );
 
@@ -162,10 +173,13 @@ class ShellCommand extends Command
             $shellsToTry[] = 'bash';
         }
 
+        $dockerCompose = $this->getDockerComposeCommand();
+
         foreach ($shellsToTry as $shell) {
             // Use POSIX-safe 'command -v' instead of 'which' for portability
             $testCommand = sprintf(
-                'docker compose -f %s exec -T %s sh -lc "command -v %s" 2>/dev/null',
+                '%s -f %s exec -T %s sh -lc "command -v %s" 2>/dev/null',
+                $dockerCompose,
                 escapeshellarg($composeFile),
                 escapeshellarg($service),
                 escapeshellarg($shell)

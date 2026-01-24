@@ -205,4 +205,60 @@ class UpCommandTest extends TestCase
         $this->assertEquals('app-https.conf', $httpsConfig);
         $this->assertEquals('app-http.conf', $httpConfig);
     }
+
+    #[Test]
+    public function it_has_file_option(): void
+    {
+        $command = new UpCommand();
+        
+        $definition = $command->getDefinition();
+        $this->assertTrue($definition->hasOption('file'));
+    }
+
+    #[Test]
+    public function it_file_option_has_shortcut_f(): void
+    {
+        $command = new UpCommand();
+        
+        $definition = $command->getDefinition();
+        $option = $definition->getOption('file');
+        $this->assertEquals('f', $option->getShortcut());
+    }
+
+    #[Test]
+    public function it_constructs_command_with_custom_compose_file(): void
+    {
+        $customFile = 'my-custom-compose.yml';
+        $composeFile = base_path($customFile);
+        $command = sprintf('docker-compose -f %s up', escapeshellarg($composeFile));
+        
+        $this->assertStringContainsString('my-custom-compose.yml', $command);
+        $this->assertStringContainsString('up', $command);
+    }
+
+    #[Test]
+    public function it_supports_both_docker_compose_commands(): void
+    {
+        $composeFile = base_path('docker-compose.development.yml');
+        
+        // Test with docker compose (V2)
+        $commandV2 = sprintf('docker compose -f %s up', escapeshellarg($composeFile));
+        $this->assertStringContainsString('docker compose', $commandV2);
+        
+        // Test with docker-compose (V1)
+        $commandV1 = sprintf('docker-compose -f %s up', escapeshellarg($composeFile));
+        $this->assertStringContainsString('docker-compose', $commandV1);
+    }
+
+    #[Test]
+    public function it_constructs_restart_command_with_docker_compose(): void
+    {
+        $composeFile = base_path('docker-compose.development.yml');
+        
+        $commandV1 = sprintf('docker-compose -f %s restart', escapeshellarg($composeFile));
+        $this->assertStringContainsString('restart', $commandV1);
+        
+        $commandV2 = sprintf('docker compose -f %s restart', escapeshellarg($composeFile));
+        $this->assertStringContainsString('restart', $commandV2);
+    }
 }

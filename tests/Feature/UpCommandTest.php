@@ -12,7 +12,7 @@ class UpCommandTest extends FeatureTestCase
     public function it_fails_when_docker_compose_file_not_found(): void
     {
         $this->artisan('laradox:up')
-            ->expectsOutput('Docker Compose file not found: ' . base_path('docker-compose.development.yml'))
+            ->expectsOutput('✗ Docker Compose file not found: docker-compose.development.yml')
             ->assertExitCode(1);
     }
 
@@ -59,7 +59,7 @@ class UpCommandTest extends FeatureTestCase
         File::put($httpsConfigPath, 'https config');
 
         $this->artisan('laradox:up', ['--detach' => true])
-            ->expectsOutput('Starting Laradox (development environment)...')
+            ->expectsOutput('Starting Laradox using docker-compose.development.yml...')
             ->doesntExpectOutput('Docker Compose file not found');
     }
 
@@ -77,7 +77,7 @@ class UpCommandTest extends FeatureTestCase
         File::put($httpsConfigPath, 'https config');
 
         $this->artisan('laradox:up', ['--build' => true])
-            ->expectsOutput('Starting Laradox (development environment)...')
+            ->expectsOutput('Starting Laradox using docker-compose.development.yml...')
             ->doesntExpectOutput('Docker Compose file not found');
     }
 
@@ -93,7 +93,7 @@ class UpCommandTest extends FeatureTestCase
         File::ensureDirectoryExists(dirname($httpsConfigPath));
         File::put($httpsConfigPath, 'https config');
         $this->artisan('laradox:up')
-            ->expectsOutput('Starting Laradox (development environment)...')
+            ->expectsOutput('Starting Laradox using docker-compose.development.yml...')
             ->doesntExpectOutput('Docker Compose file not found');
     }
 

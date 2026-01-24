@@ -1,4 +1,5 @@
 ARG ENVIRONMENT=development
+ARG LARADOX_FRANKENPHP_PORT=8080
 
 # STAGE 1: Builder
 FROM dunglas/frankenphp:1.7-php8.4-alpine AS builder
@@ -98,9 +99,9 @@ RUN cp $PHP_INI_DIR/php.ini-production $PHP_INI_DIR/php.ini
 FROM ${ENVIRONMENT}
 ARG ENVIRONMENT
 CMD if [ "$ENVIRONMENT" = "production" ]; then \
-        php artisan octane:frankenphp; \
+        php artisan octane:frankenphp --port=${LARADOX_FRANKENPHP_PORT}; \
     else \
-        php artisan octane:frankenphp --watch; \
+        php artisan octane:frankenphp --watch --port=${LARADOX_FRANKENPHP_PORT}; \
     fi
 WORKDIR /srv
 USER appuser

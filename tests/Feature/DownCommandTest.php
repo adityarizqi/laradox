@@ -12,7 +12,7 @@ class DownCommandTest extends FeatureTestCase
     public function it_fails_when_docker_compose_file_not_found(): void
     {
         $this->artisan('laradox:down')
-            ->expectsOutput('Docker Compose file not found: ' . base_path('docker-compose.development.yml'))
+            ->expectsOutput('✗ Docker Compose file not found: docker-compose.development.yml')
             ->assertExitCode(1);
     }
 
@@ -44,7 +44,7 @@ class DownCommandTest extends FeatureTestCase
         // We can't actually test docker compose execution in unit tests,
         // but we can verify the command accepts the option
         $this->artisan('laradox:down', ['--volumes' => true])
-            ->expectsOutput('Stopping Laradox (development environment)...');
+            ->expectsOutput('Stopping Laradox using docker-compose.development.yml...');
     }
 
     #[Test]
@@ -53,7 +53,7 @@ class DownCommandTest extends FeatureTestCase
         $this->createTestDockerComposeFile();
 
         $this->artisan('laradox:down')
-            ->expectsOutput('Stopping Laradox (development environment)...');
+            ->expectsOutput('Stopping Laradox using docker-compose.development.yml...');
     }
 
     #[Test]
@@ -71,7 +71,7 @@ class DownCommandTest extends FeatureTestCase
         $this->createTestDockerComposeFile('production');
 
         $this->artisan('laradox:down', ['--environment' => 'production'])
-            ->expectsOutput('Stopping Laradox (production environment)...');
+            ->expectsOutput('Stopping Laradox using docker-compose.production.yml...');
     }
 
     #[Test]
