@@ -3,12 +3,12 @@
 namespace Laradox;
 
 use Illuminate\Support\ServiceProvider;
-use Laradox\Console\InstallCommand;
-use Laradox\Console\SetupSSLCommand;
-use Laradox\Console\UpCommand;
 use Laradox\Console\DownCommand;
+use Laradox\Console\InstallCommand;
 use Laradox\Console\LogsCommand;
+use Laradox\Console\SetupSSLCommand;
 use Laradox\Console\ShellCommand;
+use Laradox\Console\UpCommand;
 
 class LaradoxServiceProvider extends ServiceProvider
 {

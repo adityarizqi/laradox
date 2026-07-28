@@ -19,7 +19,8 @@ class DockerCheckTest extends TestCase
     #[Test]
     public function it_checks_if_docker_is_installed(): void
     {
-        $command = new class extends UpCommand {
+        $command = new class extends UpCommand
+        {
             public function checkDocker(): bool
             {
                 return parent::checkDocker();
@@ -33,7 +34,8 @@ class DockerCheckTest extends TestCase
     #[Test]
     public function it_checks_if_docker_compose_is_installed(): void
     {
-        $command = new class extends UpCommand {
+        $command = new class extends UpCommand
+        {
             public function checkDockerCompose(): bool
             {
                 return parent::checkDockerCompose();
@@ -47,7 +49,8 @@ class DockerCheckTest extends TestCase
     #[Test]
     public function it_detects_operating_system(): void
     {
-        $command = new class extends UpCommand {
+        $command = new class extends UpCommand
+        {
             public function detectOperatingSystem(): string
             {
                 return parent::detectOperatingSystem();
@@ -61,7 +64,8 @@ class DockerCheckTest extends TestCase
     #[Test]
     public function it_detects_linux_os(): void
     {
-        $command = new class extends UpCommand {
+        $command = new class extends UpCommand
+        {
             public function detectOperatingSystem(): string
             {
                 // Simulate Linux detection
@@ -69,6 +73,7 @@ class DockerCheckTest extends TestCase
                 if (stripos($os, 'linux') !== false) {
                     return 'linux';
                 }
+
                 return 'unknown';
             }
         };
@@ -79,7 +84,8 @@ class DockerCheckTest extends TestCase
     #[Test]
     public function it_detects_macos_os(): void
     {
-        $command = new class extends UpCommand {
+        $command = new class extends UpCommand
+        {
             public function detectOperatingSystem(): string
             {
                 // Simulate macOS detection
@@ -87,6 +93,7 @@ class DockerCheckTest extends TestCase
                 if (stripos($os, 'darwin') !== false) {
                     return 'macos';
                 }
+
                 return 'unknown';
             }
         };
@@ -97,7 +104,8 @@ class DockerCheckTest extends TestCase
     #[Test]
     public function it_detects_windows_os(): void
     {
-        $command = new class extends UpCommand {
+        $command = new class extends UpCommand
+        {
             public function detectOperatingSystem(): string
             {
                 // Simulate Windows detection
@@ -105,6 +113,7 @@ class DockerCheckTest extends TestCase
                 if (stripos($os, 'win') !== false) {
                     return 'windows';
                 }
+
                 return 'unknown';
             }
         };
@@ -115,7 +124,8 @@ class DockerCheckTest extends TestCase
     #[Test]
     public function it_checks_if_command_is_available(): void
     {
-        $command = new class extends UpCommand {
+        $command = new class extends UpCommand
+        {
             public function commandAvailable(string $cmd): bool
             {
                 return parent::commandAvailable($cmd);
@@ -320,7 +330,8 @@ class DockerCheckTest extends TestCase
     #[Test]
     public function it_opens_browser_on_macos(): void
     {
-        $command = new class extends UpCommand {
+        $command = new class extends UpCommand
+        {
             public string $executedCommand = '';
 
             public function detectOperatingSystem(): string
@@ -332,7 +343,7 @@ class DockerCheckTest extends TestCase
             {
                 $os = $this->detectOperatingSystem();
                 if ($os === 'macos') {
-                    $this->executedCommand = "open " . escapeshellarg($url);
+                    $this->executedCommand = 'open '.escapeshellarg($url);
                 }
             }
         };
@@ -345,7 +356,8 @@ class DockerCheckTest extends TestCase
     #[Test]
     public function it_opens_browser_on_linux(): void
     {
-        $command = new class extends UpCommand {
+        $command = new class extends UpCommand
+        {
             public string $executedCommand = '';
 
             public function detectOperatingSystem(): string
@@ -357,7 +369,7 @@ class DockerCheckTest extends TestCase
             {
                 $os = $this->detectOperatingSystem();
                 if ($os === 'linux') {
-                    $this->executedCommand = "xdg-open " . escapeshellarg($url) . " 2>/dev/null &";
+                    $this->executedCommand = 'xdg-open '.escapeshellarg($url).' 2>/dev/null &';
                 }
             }
         };
@@ -370,7 +382,8 @@ class DockerCheckTest extends TestCase
     #[Test]
     public function it_opens_browser_on_windows(): void
     {
-        $command = new class extends UpCommand {
+        $command = new class extends UpCommand
+        {
             public string $executedCommand = '';
 
             public function detectOperatingSystem(): string
@@ -382,7 +395,7 @@ class DockerCheckTest extends TestCase
             {
                 $os = $this->detectOperatingSystem();
                 if ($os === 'windows') {
-                    $this->executedCommand = "start " . escapeshellarg($url);
+                    $this->executedCommand = 'start '.escapeshellarg($url);
                 }
             }
         };
@@ -453,7 +466,8 @@ class DockerCheckTest extends TestCase
     #[Test]
     public function it_gets_docker_compose_command(): void
     {
-        $command = new class extends UpCommand {
+        $command = new class extends UpCommand
+        {
             public function getDockerComposeCommand(): string
             {
                 return parent::getDockerComposeCommand();
@@ -468,7 +482,8 @@ class DockerCheckTest extends TestCase
     #[Test]
     public function it_returns_docker_compose_v2_when_available(): void
     {
-        $command = new class extends UpCommand {
+        $command = new class extends UpCommand
+        {
             public function getDockerComposeCommand(): string
             {
                 // Simulate docker compose v2 being available
@@ -476,6 +491,7 @@ class DockerCheckTest extends TestCase
                 if ($returnCode === 0) {
                     return 'docker compose';
                 }
+
                 return 'docker-compose';
             }
         };
@@ -488,7 +504,8 @@ class DockerCheckTest extends TestCase
     #[Test]
     public function it_falls_back_to_docker_compose_v1(): void
     {
-        $command = new class extends UpCommand {
+        $command = new class extends UpCommand
+        {
             public function getDockerComposeCommand(): string
             {
                 // Simulate docker compose v2 NOT being available
@@ -503,7 +520,8 @@ class DockerCheckTest extends TestCase
     #[Test]
     public function it_checks_docker_compose_with_both_v1_and_v2(): void
     {
-        $command = new class extends UpCommand {
+        $command = new class extends UpCommand
+        {
             public function checkDockerCompose(): bool
             {
                 return parent::checkDockerCompose();
@@ -595,18 +613,20 @@ class DockerCheckTest extends TestCase
     #[Test]
     public function it_uses_docker_compose_command_in_are_containers_running(): void
     {
-        $command = new class extends UpCommand {
+        $command = new class extends UpCommand
+        {
             public string $usedCommand = '';
-            
+
             protected function getDockerComposeCommand(): string
             {
                 return 'docker-compose';
             }
-            
+
             public function areContainersRunning(string $composeFile): bool
             {
                 $dockerCompose = $this->getDockerComposeCommand();
                 $this->usedCommand = $dockerCompose;
+
                 return false; // Just for testing
             }
         };
@@ -618,18 +638,20 @@ class DockerCheckTest extends TestCase
     #[Test]
     public function it_uses_docker_compose_command_in_get_available_services(): void
     {
-        $command = new class extends UpCommand {
+        $command = new class extends UpCommand
+        {
             public string $usedCommand = '';
-            
+
             protected function getDockerComposeCommand(): string
             {
                 return 'docker-compose';
             }
-            
+
             public function getAvailableServices(string $composeFile): array
             {
                 $dockerCompose = $this->getDockerComposeCommand();
                 $this->usedCommand = $dockerCompose;
+
                 return ['nginx', 'php']; // Default for testing
             }
         };

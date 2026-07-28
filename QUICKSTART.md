@@ -4,7 +4,7 @@ Get your Laravel application running with Docker in less than 5 minutes!
 
 ## Prerequisites
 
-- PHP 8.2+ and Composer installed locally
+- PHP 8.2+ and Composer installed locally (PHP 8.3+ for Laravel 13.x)
 - Docker and Docker Compose (Laradox will detect and help install if missing)
 - [mkcert](https://github.com/FiloSottile/mkcert) (Laradox will detect and help install if missing)
 

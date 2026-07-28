@@ -34,7 +34,6 @@ abstract class TestCase extends Orchestra
      * Define environment setup.
      *
      * @param  Application  $app
-     * @return void
      */
     protected function defineEnvironment($app): void
     {
@@ -54,7 +53,7 @@ abstract class TestCase extends Orchestra
     protected function createTestDockerComposeFile(string $env = 'development'): string
     {
         $path = base_path("docker-compose.{$env}.yml");
-        $content = <<<YAML
+        $content = <<<'YAML'
 # TEST FILE - DO NOT USE IN PRODUCTION
 # This file is for testing purposes only
 services:
@@ -63,6 +62,7 @@ services:
 YAML;
 
         File::put($path, $content);
+
         return $path;
     }
 
@@ -73,6 +73,7 @@ YAML;
     {
         $path = base_path('docker/nginx/ssl');
         File::makeDirectory($path, 0755, true);
+
         return $path;
     }
 }

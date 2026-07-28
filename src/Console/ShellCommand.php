@@ -8,6 +8,7 @@ use Laradox\Console\Concerns\ChecksDocker;
 class ShellCommand extends Command
 {
     use ChecksDocker;
+
     /**
      * The name and signature of the console command.
      *
@@ -29,46 +30,47 @@ class ShellCommand extends Command
 
     /**
      * Execute the console command.
-     *
-     * @return int
      */
     public function handle(): int
     {
         // Check if Docker is installed
-        if (!$this->checkDocker()) {
+        if (! $this->checkDocker()) {
             return $this->handleMissingDocker();
         }
 
         // Check if Docker Compose is available
-        if (!$this->checkDockerCompose()) {
+        if (! $this->checkDockerCompose()) {
             $this->newLine();
             $this->error('✗ Docker Compose is not available.');
             $this->line('Please ensure Docker Compose is installed and running.');
             $this->line('Visit: https://docs.docker.com/compose/install/');
             $this->newLine();
+
             return self::FAILURE;
         }
 
         $env = $this->option('environment');
         $customFile = $this->option('file');
-        
+
         // Determine compose file path
         $composeFile = $this->resolveComposeFile($env, $customFile);
         if ($composeFile === false) {
             return self::FAILURE;
         }
 
-        if (!file_exists($composeFile)) {
+        if (! file_exists($composeFile)) {
             $this->error("Docker Compose file not found: {$composeFile}");
+
             return self::FAILURE;
         }
 
         // Check if containers are running
-        if (!$this->areContainersRunning($composeFile)) {
+        if (! $this->areContainersRunning($composeFile)) {
             $this->newLine();
             $this->error('✗ No containers are running!');
             $this->line('Start containers with: php artisan laradox:up --detach');
             $this->newLine();
+
             return self::FAILURE;
         }
 
@@ -76,7 +78,7 @@ class ShellCommand extends Command
 
         // Validate service exists
         $availableServices = $this->getAvailableServices($composeFile);
-        if (!in_array($service, $availableServices)) {
+        if (! in_array($service, $availableServices)) {
             $this->error("Service '{$service}' not found in {$env} environment.");
             $this->newLine();
             $this->info('Available services:');
@@ -84,13 +86,15 @@ class ShellCommand extends Command
                 $this->line("  - {$serviceName}");
             }
             $this->newLine();
+
             return self::FAILURE;
         }
 
         // Check if service is running
-        if (!$this->isServiceRunning($composeFile, $service)) {
+        if (! $this->isServiceRunning($composeFile, $service)) {
             $this->error("Service '{$service}' is not running.");
             $this->line('Start containers with: php artisan laradox:up --detach');
+
             return self::FAILURE;
         }
 
@@ -98,9 +102,10 @@ class ShellCommand extends Command
         $requestedShell = $this->option('shell');
         $availableShell = $this->detectAvailableShell($composeFile, $service, $requestedShell);
 
-        if (!$availableShell) {
+        if (! $availableShell) {
             $this->error("No shell found in '{$service}' container.");
-            $this->line('Tried: ' . $requestedShell . ', sh');
+            $this->line('Tried: '.$requestedShell.', sh');
+
             return self::FAILURE;
         }
 
@@ -119,8 +124,8 @@ class ShellCommand extends Command
 
         $command .= sprintf(' %s %s', escapeshellarg($service), escapeshellarg($availableShell));
 
-        $shellInfo = $availableShell !== $requestedShell 
-            ? "{$availableShell} (fallback from {$requestedShell})" 
+        $shellInfo = $availableShell !== $requestedShell
+            ? "{$availableShell} (fallback from {$requestedShell})"
             : $availableShell;
 
         $this->info("Entering '{$service}' container with {$shellInfo}...");
@@ -134,10 +139,6 @@ class ShellCommand extends Command
 
     /**
      * Check if a specific service is running.
-     *
-     * @param string $composeFile
-     * @param string $service
-     * @return bool
      */
     protected function isServiceRunning(string $composeFile, string $service): bool
     {
@@ -156,20 +157,17 @@ class ShellCommand extends Command
     /**
      * Detect which shell is available in the container.
      *
-     * @param string $composeFile
-     * @param string $service
-     * @param string $preferredShell
      * @return string|null The available shell path or null if none found
      */
     protected function detectAvailableShell(string $composeFile, string $service, string $preferredShell): ?string
     {
         $shellsToTry = [$preferredShell];
-        
+
         // Add common fallbacks if not already in the list
         if ($preferredShell !== 'sh') {
             $shellsToTry[] = 'sh';
         }
-        if ($preferredShell !== 'bash' && !in_array('bash', $shellsToTry)) {
+        if ($preferredShell !== 'bash' && ! in_array('bash', $shellsToTry)) {
             $shellsToTry[] = 'bash';
         }
 

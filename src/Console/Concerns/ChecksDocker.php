@@ -6,20 +6,17 @@ trait ChecksDocker
 {
     /**
      * Check if Docker is installed.
-     *
-     * @return bool
      */
     protected function checkDocker(): bool
     {
         exec('docker --version', $output, $returnCode);
         $output = $output ?? [];
+
         return $returnCode === 0;
     }
 
     /**
      * Check if Docker Compose is installed.
-     *
-     * @return bool
      */
     protected function checkDockerCompose(): bool
     {
@@ -30,6 +27,7 @@ trait ChecksDocker
         }
         // Fallback to 'docker-compose' (Docker Compose V1)
         exec('docker-compose version', $output, $returnCode);
+
         return $returnCode === 0;
     }
 
@@ -37,8 +35,6 @@ trait ChecksDocker
      * Get the available Docker Compose command.
      *
      * Returns 'docker compose' if available (V2), otherwise 'docker-compose' (V1).
-     *
-     * @return string
      */
     protected function getDockerComposeCommand(): string
     {
@@ -46,6 +42,7 @@ trait ChecksDocker
         if ($returnCode === 0) {
             return 'docker compose';
         }
+
         return 'docker-compose';
     }
 
@@ -57,8 +54,8 @@ trait ChecksDocker
      * If the default file doesn't exist and no custom file is provided,
      * prompts the user to specify one using the -f flag.
      *
-     * @param string $environment The environment (development|production)
-     * @param string|null $customFile Custom compose file path from -f option
+     * @param  string  $environment  The environment (development|production)
+     * @param  string|null  $customFile  Custom compose file path from -f option
      * @return string|false The resolved compose file path, or false on failure
      */
     protected function resolveComposeFile(string $environment, ?string $customFile): string|false
@@ -68,12 +65,13 @@ trait ChecksDocker
             if (str_starts_with($customFile, '/')) {
                 return $customFile;
             }
+
             return base_path($customFile);
         }
 
         // Try default compose file for the environment
         $defaultFile = base_path("docker-compose.{$environment}.yml");
-        
+
         if (file_exists($defaultFile)) {
             return $defaultFile;
         }
@@ -89,16 +87,16 @@ trait ChecksDocker
         $this->comment('     php artisan vendor:publish --tag=laradox-docker');
         $this->newLine();
         $this->line('  2. Use a custom compose file with the -f option:');
-        $this->comment("     php artisan laradox:up -f docker-compose.yml");
-        $this->comment("     php artisan laradox:up -f my-custom-compose.yml");
+        $this->comment('     php artisan laradox:up -f docker-compose.yml');
+        $this->comment('     php artisan laradox:up -f my-custom-compose.yml');
         $this->newLine();
-        
+
         // Check if any docker-compose*.yml files exist
         $existingFiles = glob(base_path('docker-compose*.yml'));
-        if (!empty($existingFiles)) {
+        if (! empty($existingFiles)) {
             $this->line('  Available compose files in your project:');
             foreach ($existingFiles as $file) {
-                $this->comment('     ' . basename($file));
+                $this->comment('     '.basename($file));
             }
             $this->newLine();
         }
@@ -108,8 +106,6 @@ trait ChecksDocker
 
     /**
      * Handle missing Docker installation.
-     *
-     * @return int
      */
     protected function handleMissingDocker(): int
     {
@@ -162,8 +158,6 @@ trait ChecksDocker
      *
      * Note: Requires systemd for service management. On WSL, containers,
      * or non-systemd distributions, manual installation may be needed.
-     *
-     * @return int
      */
     protected function installDockerLinux(): int
     {
@@ -181,6 +175,7 @@ trait ChecksDocker
             if ($distro === 'debian') {
                 return $this->installDockerDebian();
             }
+
             return $this->installDockerUbuntu();
         } elseif ($hasDnf) {
             return $this->installDockerFedora();
@@ -189,14 +184,13 @@ trait ChecksDocker
         } else {
             $this->error('Could not detect Linux distribution (apt, yum, or dnf).');
             $this->line('Please install Docker manually: https://docs.docker.com/engine/install/');
+
             return 1; // FAILURE
         }
     }
 
     /**
      * Install Docker on Ubuntu.
-     *
-     * @return int
      */
     protected function installDockerUbuntu(): int
     {
@@ -226,9 +220,10 @@ trait ChecksDocker
         foreach ($commands as $command) {
             $this->line("Running: {$command}");
             passthru($command, $returnCode);
-            if ($returnCode !== 0 && !str_contains($command, 'remove')) {
+            if ($returnCode !== 0 && ! str_contains($command, 'remove')) {
                 $this->error('Installation failed.');
                 $this->line('Please try installing manually: https://docs.docker.com/engine/install/ubuntu/');
+
                 return 1; // FAILURE
             }
         }
@@ -254,8 +249,6 @@ trait ChecksDocker
 
     /**
      * Install Docker on Debian.
-     *
-     * @return int
      */
     protected function installDockerDebian(): int
     {
@@ -285,9 +278,10 @@ trait ChecksDocker
         foreach ($commands as $command) {
             $this->line("Running: {$command}");
             passthru($command, $returnCode);
-            if ($returnCode !== 0 && !str_contains($command, 'remove')) {
+            if ($returnCode !== 0 && ! str_contains($command, 'remove')) {
                 $this->error('Installation failed.');
                 $this->line('Please try installing manually: https://docs.docker.com/engine/install/debian/');
+
                 return 1; // FAILURE
             }
         }
@@ -313,8 +307,6 @@ trait ChecksDocker
 
     /**
      * Install Docker on Fedora.
-     *
-     * @return int
      */
     protected function installDockerFedora(): int
     {
@@ -337,9 +329,10 @@ trait ChecksDocker
         foreach ($commands as $command) {
             $this->line("Running: {$command}");
             passthru($command, $returnCode);
-            if ($returnCode !== 0 && !str_contains($command, 'remove')) {
+            if ($returnCode !== 0 && ! str_contains($command, 'remove')) {
                 $this->error('Installation failed.');
                 $this->line('Please try installing manually: https://docs.docker.com/engine/install/fedora/');
+
                 return 1; // FAILURE
             }
         }
@@ -364,8 +357,6 @@ trait ChecksDocker
 
     /**
      * Install Docker on CentOS/RHEL.
-     *
-     * @return int
      */
     protected function installDockerCentOS(): int
     {
@@ -388,9 +379,10 @@ trait ChecksDocker
         foreach ($commands as $command) {
             $this->line("Running: {$command}");
             passthru($command, $returnCode);
-            if ($returnCode !== 0 && !str_contains($command, 'remove')) {
+            if ($returnCode !== 0 && ! str_contains($command, 'remove')) {
                 $this->error('Installation failed.');
                 $this->line('Please try installing manually: https://docs.docker.com/engine/install/centos/');
+
                 return 1; // FAILURE
             }
         }
@@ -435,7 +427,7 @@ trait ChecksDocker
 
         // Fallback: check for lsb_release command
         exec('lsb_release -is 2>/dev/null', $output, $returnCode);
-        if ($returnCode === 0 && !empty($output)) {
+        if ($returnCode === 0 && ! empty($output)) {
             $distro = strtolower(trim($output[0]));
             if ($distro === 'debian') {
                 return 'debian';
@@ -470,42 +462,34 @@ trait ChecksDocker
 
     /**
      * Check if a command is available.
-     *
-     * @param string $command
-     * @return bool
      */
     protected function commandAvailable(string $command): bool
     {
-        exec('which ' . escapeshellarg($command), $output, $returnCode);
+        exec('which '.escapeshellarg($command), $output, $returnCode);
         unset($output);
+
         return $returnCode === 0;
     }
 
     /**
      * Open a URL in the default browser.
-     *
-     * @param string $url
-     * @return void
      */
     protected function openBrowser(string $url): void
     {
         $os = $this->detectOperatingSystem();
 
         if ($os === 'macos') {
-            exec("open " . escapeshellarg($url));
+            exec('open '.escapeshellarg($url));
         } elseif ($os === 'linux') {
-            exec("xdg-open " . escapeshellarg($url) . " 2>/dev/null &");
+            exec('xdg-open '.escapeshellarg($url).' 2>/dev/null &');
         } elseif ($os === 'windows') {
             // Use an empty window title to ensure the URL is treated as the target
-            exec('start "" ' . escapeshellarg($url));
+            exec('start "" '.escapeshellarg($url));
         }
     }
 
     /**
      * Check if containers are running for the given compose file.
-     *
-     * @param string $composeFile
-     * @return bool
      */
     protected function areContainersRunning(string $composeFile): bool
     {
@@ -518,14 +502,11 @@ trait ChecksDocker
 
         exec($command, $output, $returnCode);
 
-        return $returnCode === 0 && !empty($output);
+        return $returnCode === 0 && ! empty($output);
     }
 
     /**
      * Get list of available services from the compose file.
-     *
-     * @param string $composeFile
-     * @return array
      */
     protected function getAvailableServices(string $composeFile): array
     {

@@ -8,6 +8,7 @@ use Laradox\Console\Concerns\ChecksDocker;
 class LogsCommand extends Command
 {
     use ChecksDocker;
+
     /**
      * The name and signature of the console command.
      *
@@ -30,38 +31,38 @@ class LogsCommand extends Command
 
     /**
      * Execute the console command.
-     *
-     * @return int
      */
     public function handle(): int
     {
         $env = $this->option('environment');
         $customFile = $this->option('file');
-        
+
         // Determine compose file path
         $composeFile = $this->resolveComposeFile($env, $customFile);
         if ($composeFile === false) {
             return self::FAILURE;
         }
 
-        if (!file_exists($composeFile)) {
+        if (! file_exists($composeFile)) {
             $this->error("Docker Compose file not found: {$composeFile}");
+
             return self::FAILURE;
         }
 
         // Check if containers are running
-        if (!$this->areContainersRunning($composeFile)) {
+        if (! $this->areContainersRunning($composeFile)) {
             $this->newLine();
             $this->error('✗ No containers are running!');
             $this->line('Start containers with: php artisan laradox:up --detach');
             $this->newLine();
+
             return self::FAILURE;
         }
 
         $service = $this->argument('service');
 
         // If no service specified, show all available services
-        if (!$service) {
+        if (! $service) {
             $this->info('Available services:');
             $services = $this->getAvailableServices($composeFile);
             foreach ($services as $serviceName) {
@@ -71,6 +72,7 @@ class LogsCommand extends Command
             $this->comment('Usage: php artisan laradox:logs [service]');
             $this->comment('Example: php artisan laradox:logs php --follow');
             $this->newLine();
+
             return self::SUCCESS;
         }
 
@@ -88,8 +90,9 @@ class LogsCommand extends Command
 
         if ($this->option('tail')) {
             $tail = $this->option('tail');
-            if (!is_numeric($tail) || $tail < 1) {
+            if (! is_numeric($tail) || $tail < 1) {
                 $this->error('The --tail option must be a positive integer.');
+
                 return self::FAILURE;
             }
             $command .= sprintf(' --tail=%s', escapeshellarg($this->option('tail')));
@@ -99,7 +102,7 @@ class LogsCommand extends Command
             $command .= ' --timestamps';
         }
 
-        $command .= ' ' . escapeshellarg($service);
+        $command .= ' '.escapeshellarg($service);
 
         $this->info("Viewing logs for '{$service}' service...");
         $this->line($this->option('follow') ? 'Press Ctrl+C to stop following logs' : '');

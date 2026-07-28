@@ -90,9 +90,9 @@ class DownCommandTest extends FeatureTestCase
     {
         // This test verifies that the command checks for Docker
         $this->createTestDockerComposeFile();
-        
+
         $result = $this->artisan('laradox:down');
-        
+
         // Command should either succeed with Docker or fail gracefully
         $this->assertContains($result->run(), [0, 1]);
     }
@@ -102,9 +102,9 @@ class DownCommandTest extends FeatureTestCase
     {
         // This test verifies that the command checks for Docker Compose
         $this->createTestDockerComposeFile();
-        
+
         $result = $this->artisan('laradox:down');
-        
+
         // Command should check for Docker Compose availability
         $this->assertContains($result->run(), [0, 1]);
     }

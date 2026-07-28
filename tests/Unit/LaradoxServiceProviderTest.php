@@ -52,7 +52,7 @@ class LaradoxServiceProviderTest extends TestCase
     public function it_has_publishable_config(): void
     {
         $provider = new LaradoxServiceProvider($this->app);
-        
+
         // The provider registers publishable assets
         $this->assertInstanceOf(LaradoxServiceProvider::class, $provider);
     }

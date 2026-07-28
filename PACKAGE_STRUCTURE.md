@@ -62,6 +62,7 @@ laradox/
 ├── LICENSE
 ├── PACKAGE_STRUCTURE.md
 ├── phpunit.xml
+├── pint.json                                # Laravel Pint code style config
 ├── QUICKSTART.md
 └── README.md
 ```

@@ -14,6 +14,7 @@ class SetupSSLCommandTest extends FeatureTestCase
     protected function mkcertInstalled(): bool
     {
         exec('which mkcert 2>/dev/null', $output, $returnCode);
+
         return $returnCode === 0;
     }
 
@@ -23,13 +24,13 @@ class SetupSSLCommandTest extends FeatureTestCase
     protected function setupSslCommand(array $parameters = []): mixed
     {
         $command = $this->artisan('laradox:setup-ssl', $parameters);
-        
+
         // If mkcert is not installed, we need to mock the confirmation prompts
-        if (!$this->mkcertInstalled()) {
+        if (! $this->mkcertInstalled()) {
             // The prompt text depends on the OS, so we mock "no" for Linux (CI default)
             $command->expectsConfirmation('Would you like to install mkcert automatically?', 'no');
         }
-        
+
         return $command;
     }
 
@@ -39,20 +40,20 @@ class SetupSSLCommandTest extends FeatureTestCase
         $this->setupSslCommand()
             ->expectsOutput('Setting up SSL certificates...')
             ->run();
-            
+
         // Test passes if command doesn't crash
         $this->assertTrue(true);
     }
 
     #[Test]
     public function it_checks_for_mkcert_installation(): void
-    {        
+    {
         // In CI/test environments where mkcert isn't installed, command returns 1
         // If mkcert is installed, it succeeds and returns 0
         $result = $this->setupSslCommand()
             ->expectsOutput('Setting up SSL certificates...')
             ->run();
-        
+
         // Accept either exit code since mkcert may or may not be installed
         $this->assertContains($result, [0, 1]);
     }
@@ -75,7 +76,7 @@ class SetupSSLCommandTest extends FeatureTestCase
         $this->setupSslCommand(['--domain' => 'override.docker.localhost'])
             ->expectsOutput('Setting up SSL certificates...')
             ->run();
-            
+
         $this->assertTrue(true);
     }
 
@@ -83,11 +84,11 @@ class SetupSSLCommandTest extends FeatureTestCase
     public function it_accepts_additional_domains_option(): void
     {
         $this->setupSslCommand([
-            '--additional-domains' => ['domain1.test', 'domain2.test']
+            '--additional-domains' => ['domain1.test', 'domain2.test'],
         ])
             ->expectsOutput('Setting up SSL certificates...')
             ->run();
-            
+
         $this->assertTrue(true);
     }
 
@@ -106,7 +107,7 @@ class SetupSSLCommandTest extends FeatureTestCase
         // The command will try to create the directory
         // (may fail if mkcert isn't installed, but directory should be created)
         $this->assertTrue(
-            File::exists($sslDir) || !File::exists(dirname($sslDir)),
+            File::exists($sslDir) || ! File::exists(dirname($sslDir)),
             'SSL directory should be created or parent directory should not exist'
         );
     }
@@ -160,7 +161,7 @@ class SetupSSLCommandTest extends FeatureTestCase
         $exitCode = $this->setupSslCommand()
             ->expectsOutput('Setting up SSL certificates...')
             ->run();
-        
+
         // Accept either exit code
         $this->assertContains($exitCode, [0, 1]);
     }
@@ -172,7 +173,7 @@ class SetupSSLCommandTest extends FeatureTestCase
         // If mkcert is installed, command succeeds (0)
         // If not installed and user declines/auto-install fails, returns failure (1)
         $exitCode = $this->setupSslCommand()->run();
-        
+
         $this->assertContains($exitCode, [0, 1]);
     }
 
@@ -183,7 +184,7 @@ class SetupSSLCommandTest extends FeatureTestCase
         // When mkcert is present, command generates certificates
         // Command should handle both scenarios gracefully
         $exitCode = $this->setupSslCommand()->run();
-        
+
         $this->assertContains($exitCode, [0, 1]);
     }
 
@@ -193,7 +194,7 @@ class SetupSSLCommandTest extends FeatureTestCase
         // Test that special characters in domains are handled safely
         $exitCode = $this->setupSslCommand([
             '--domain' => 'test.local',
-            '--additional-domains' => ['*.test.local']
+            '--additional-domains' => ['*.test.local'],
         ])->run();
 
         // Should succeed (exit code 0) or fail (exit code 1) depending on environment
@@ -207,7 +208,7 @@ class SetupSSLCommandTest extends FeatureTestCase
         // This is implicitly tested when running the command
         // OS detection should not cause the command to crash
         $exitCode = $this->setupSslCommand()->run();
-        
+
         $this->assertContains($exitCode, [0, 1]);
     }
 
@@ -218,7 +219,7 @@ class SetupSSLCommandTest extends FeatureTestCase
         // On other OS, it works normally
         // This test ensures the command doesn't crash regardless of OS
         $exitCode = $this->setupSslCommand()->run();
-        
+
         $this->assertContains($exitCode, [0, 1]);
     }
 
@@ -229,7 +230,7 @@ class SetupSSLCommandTest extends FeatureTestCase
         // This test ensures the Linux flow doesn't crash
         // Accepts both success (mkcert installed) and failure (not installed, declined)
         $exitCode = $this->setupSslCommand()->run();
-        
+
         $this->assertContains($exitCode, [0, 1]);
     }
 
@@ -240,7 +241,7 @@ class SetupSSLCommandTest extends FeatureTestCase
         // This test ensures the macOS flow doesn't crash
         // Accepts both success (mkcert installed) and failure (not installed, declined)
         $exitCode = $this->setupSslCommand()->run();
-        
+
         $this->assertContains($exitCode, [0, 1]);
     }
 }

@@ -2,27 +2,26 @@
 
 namespace Laradox\Tests\Unit;
 
+use Illuminate\Support\Facades\Config;
 use Laradox\Console\UpCommand;
 use Laradox\Tests\TestCase;
 use PHPUnit\Framework\Attributes\Test;
-use Illuminate\Support\Facades\File;
-use Illuminate\Support\Facades\Config;
 
 class UpCommandTest extends TestCase
 {
     #[Test]
     public function it_has_correct_signature(): void
     {
-        $command = new UpCommand();
-        
+        $command = new UpCommand;
+
         $this->assertStringContainsString('laradox:up', $command->getName());
     }
 
     #[Test]
     public function it_has_environment_option(): void
     {
-        $command = new UpCommand();
-        
+        $command = new UpCommand;
+
         $definition = $command->getDefinition();
         $this->assertTrue($definition->hasOption('environment'));
     }
@@ -30,8 +29,8 @@ class UpCommandTest extends TestCase
     #[Test]
     public function it_has_detach_option(): void
     {
-        $command = new UpCommand();
-        
+        $command = new UpCommand;
+
         $definition = $command->getDefinition();
         $this->assertTrue($definition->hasOption('detach'));
     }
@@ -39,8 +38,8 @@ class UpCommandTest extends TestCase
     #[Test]
     public function it_has_build_option(): void
     {
-        $command = new UpCommand();
-        
+        $command = new UpCommand;
+
         $definition = $command->getDefinition();
         $this->assertTrue($definition->hasOption('build'));
     }
@@ -48,8 +47,8 @@ class UpCommandTest extends TestCase
     #[Test]
     public function it_has_force_ssl_option(): void
     {
-        $command = new UpCommand();
-        
+        $command = new UpCommand;
+
         $definition = $command->getDefinition();
         $this->assertTrue($definition->hasOption('force-ssl'));
     }
@@ -57,8 +56,8 @@ class UpCommandTest extends TestCase
     #[Test]
     public function it_has_correct_description(): void
     {
-        $command = new UpCommand();
-        
+        $command = new UpCommand;
+
         $this->assertStringContainsString('Start Laradox Docker containers', $command->getDescription());
     }
 
@@ -67,7 +66,7 @@ class UpCommandTest extends TestCase
     {
         $env = 'development';
         $composePath = base_path("docker-compose.{$env}.yml");
-        
+
         $this->assertStringContainsString('docker-compose.development.yml', $composePath);
     }
 
@@ -76,10 +75,10 @@ class UpCommandTest extends TestCase
     {
         Config::set('laradox.ssl.cert_path', base_path('docker/nginx/ssl/localhost.pem'));
         Config::set('laradox.ssl.key_path', base_path('docker/nginx/ssl/localhost-key.pem'));
-        
+
         $certPath = config('laradox.ssl.cert_path');
         $keyPath = config('laradox.ssl.key_path');
-        
+
         $this->assertStringContainsString('localhost.pem', $certPath);
         $this->assertStringContainsString('localhost-key.pem', $keyPath);
     }
@@ -90,7 +89,7 @@ class UpCommandTest extends TestCase
         $httpConfig = base_path('docker/nginx/conf.d/app-http.conf');
         $httpsConfig = base_path('docker/nginx/conf.d/app-https.conf');
         $targetConfig = base_path('docker/nginx/conf.d/app.conf');
-        
+
         $this->assertIsString($httpConfig);
         $this->assertIsString($httpsConfig);
         $this->assertIsString($targetConfig);
@@ -101,7 +100,7 @@ class UpCommandTest extends TestCase
     {
         $composeFile = base_path('docker-compose.development.yml');
         $command = sprintf('docker compose -f %s up', escapeshellarg($composeFile));
-        
+
         $this->assertStringContainsString('docker compose', $command);
         $this->assertStringContainsString('up', $command);
     }
@@ -112,7 +111,7 @@ class UpCommandTest extends TestCase
         $composeFile = base_path('docker-compose.development.yml');
         $command = sprintf('docker compose -f %s up', escapeshellarg($composeFile));
         $command .= ' --build';
-        
+
         $this->assertStringContainsString('--build', $command);
     }
 
@@ -122,7 +121,7 @@ class UpCommandTest extends TestCase
         $composeFile = base_path('docker-compose.development.yml');
         $command = sprintf('docker compose -f %s up', escapeshellarg($composeFile));
         $command .= ' -d';
-        
+
         $this->assertStringContainsString('-d', $command);
     }
 
@@ -131,7 +130,7 @@ class UpCommandTest extends TestCase
     {
         $env = 'development';
         $composeFile = base_path("docker-compose.{$env}.yml");
-        
+
         $this->assertStringContainsString('development', $composeFile);
     }
 
@@ -140,7 +139,7 @@ class UpCommandTest extends TestCase
     {
         $composeFile = base_path('docker-compose.development.yml');
         $restartCommand = sprintf('docker compose -f %s restart', escapeshellarg($composeFile));
-        
+
         $this->assertStringContainsString('docker compose', $restartCommand);
         $this->assertStringContainsString('restart', $restartCommand);
     }
@@ -150,7 +149,7 @@ class UpCommandTest extends TestCase
     {
         $composeFile = base_path('docker-compose.development.yml');
         $command = sprintf('docker compose -f %s ps --quiet 2>/dev/null', escapeshellarg($composeFile));
-        
+
         $this->assertStringContainsString('ps --quiet', $command);
     }
 
@@ -159,9 +158,9 @@ class UpCommandTest extends TestCase
     {
         $sslExists = true;
         $forceSsl = null;
-        
+
         $protocol = $sslExists && $forceSsl !== 'false' ? 'https' : 'http';
-        
+
         $this->assertEquals('https', $protocol);
     }
 
@@ -170,9 +169,9 @@ class UpCommandTest extends TestCase
     {
         $sslExists = false;
         $forceSsl = 'false';
-        
+
         $protocol = $sslExists && $forceSsl !== 'false' ? 'https' : 'http';
-        
+
         $this->assertEquals('http', $protocol);
     }
 
@@ -181,7 +180,7 @@ class UpCommandTest extends TestCase
     {
         $forceSslTrue = filter_var('true', FILTER_VALIDATE_BOOLEAN);
         $forceSslFalse = filter_var('false', FILTER_VALIDATE_BOOLEAN);
-        
+
         $this->assertTrue($forceSslTrue);
         $this->assertFalse($forceSslFalse);
     }
@@ -191,7 +190,7 @@ class UpCommandTest extends TestCase
     {
         $composeFile = base_path('docker-compose.development.yml');
         $escaped = escapeshellarg($composeFile);
-        
+
         $this->assertStringStartsWith("'", $escaped);
         $this->assertStringEndsWith("'", $escaped);
     }
@@ -201,7 +200,7 @@ class UpCommandTest extends TestCase
     {
         $httpsConfig = 'app-https.conf';
         $httpConfig = 'app-http.conf';
-        
+
         $this->assertEquals('app-https.conf', $httpsConfig);
         $this->assertEquals('app-http.conf', $httpConfig);
     }
@@ -209,8 +208,8 @@ class UpCommandTest extends TestCase
     #[Test]
     public function it_has_file_option(): void
     {
-        $command = new UpCommand();
-        
+        $command = new UpCommand;
+
         $definition = $command->getDefinition();
         $this->assertTrue($definition->hasOption('file'));
     }
@@ -218,8 +217,8 @@ class UpCommandTest extends TestCase
     #[Test]
     public function it_file_option_has_shortcut_f(): void
     {
-        $command = new UpCommand();
-        
+        $command = new UpCommand;
+
         $definition = $command->getDefinition();
         $option = $definition->getOption('file');
         $this->assertEquals('f', $option->getShortcut());
@@ -231,7 +230,7 @@ class UpCommandTest extends TestCase
         $customFile = 'my-custom-compose.yml';
         $composeFile = base_path($customFile);
         $command = sprintf('docker-compose -f %s up', escapeshellarg($composeFile));
-        
+
         $this->assertStringContainsString('my-custom-compose.yml', $command);
         $this->assertStringContainsString('up', $command);
     }
@@ -240,11 +239,11 @@ class UpCommandTest extends TestCase
     public function it_supports_both_docker_compose_commands(): void
     {
         $composeFile = base_path('docker-compose.development.yml');
-        
+
         // Test with docker compose (V2)
         $commandV2 = sprintf('docker compose -f %s up', escapeshellarg($composeFile));
         $this->assertStringContainsString('docker compose', $commandV2);
-        
+
         // Test with docker-compose (V1)
         $commandV1 = sprintf('docker-compose -f %s up', escapeshellarg($composeFile));
         $this->assertStringContainsString('docker-compose', $commandV1);
@@ -254,10 +253,10 @@ class UpCommandTest extends TestCase
     public function it_constructs_restart_command_with_docker_compose(): void
     {
         $composeFile = base_path('docker-compose.development.yml');
-        
+
         $commandV1 = sprintf('docker-compose -f %s restart', escapeshellarg($composeFile));
         $this->assertStringContainsString('restart', $commandV1);
-        
+
         $commandV2 = sprintf('docker compose -f %s restart', escapeshellarg($composeFile));
         $this->assertStringContainsString('restart', $commandV2);
     }

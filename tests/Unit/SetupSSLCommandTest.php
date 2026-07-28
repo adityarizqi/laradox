@@ -18,7 +18,8 @@ class SetupSSLCommandTest extends TestCase
     #[Test]
     public function it_detects_linux_operating_system(): void
     {
-        $command = new class extends SetupSSLCommand {
+        $command = new class extends SetupSSLCommand
+        {
             public function detectOS(): string
             {
                 return parent::detectOS();
@@ -33,7 +34,8 @@ class SetupSSLCommandTest extends TestCase
     #[Test]
     public function it_detects_macos_operating_system(): void
     {
-        $command = new class extends SetupSSLCommand {
+        $command = new class extends SetupSSLCommand
+        {
             public function detectOS(): string
             {
                 // Override to test macOS detection
@@ -41,6 +43,7 @@ class SetupSSLCommandTest extends TestCase
                 if (stripos($os, 'darwin') !== false) {
                     return 'macos';
                 }
+
                 return 'unknown';
             }
         };
@@ -51,7 +54,8 @@ class SetupSSLCommandTest extends TestCase
     #[Test]
     public function it_detects_windows_operating_system(): void
     {
-        $command = new class extends SetupSSLCommand {
+        $command = new class extends SetupSSLCommand
+        {
             public function detectOS(): string
             {
                 // Override to test Windows detection
@@ -59,6 +63,7 @@ class SetupSSLCommandTest extends TestCase
                 if (stripos($os, 'win') !== false) {
                     return 'windows';
                 }
+
                 return 'unknown';
             }
         };
@@ -69,7 +74,8 @@ class SetupSSLCommandTest extends TestCase
     #[Test]
     public function it_checks_if_mkcert_command_exists(): void
     {
-        $command = new class extends SetupSSLCommand {
+        $command = new class extends SetupSSLCommand
+        {
             public function checkMkcert(): bool
             {
                 return parent::checkMkcert();
@@ -83,7 +89,8 @@ class SetupSSLCommandTest extends TestCase
     #[Test]
     public function it_checks_if_command_exists(): void
     {
-        $command = new class extends SetupSSLCommand {
+        $command = new class extends SetupSSLCommand
+        {
             public function commandExists(string $cmd): bool
             {
                 return parent::commandExists($cmd);
@@ -174,7 +181,7 @@ class SetupSSLCommandTest extends TestCase
             ->with('yum')->andReturn(false)
             ->shouldReceive('commandExists')
             ->with('dnf')->andReturn(false);
-        
+
         $command->shouldReceive('info')->andReturn(null);
         $command->shouldReceive('newLine')->andReturn(null);
         $command->shouldReceive('error')->andReturn(null);
@@ -192,7 +199,7 @@ class SetupSSLCommandTest extends TestCase
         $command->shouldAllowMockingProtectedMethods();
         $command->shouldReceive('commandExists')
             ->with('apt-get')->andReturn(true);
-        
+
         $hasApt = $command->commandExists('apt-get');
         $this->assertTrue($hasApt);
     }
@@ -206,10 +213,10 @@ class SetupSSLCommandTest extends TestCase
             ->with('apt-get')->andReturn(false)
             ->shouldReceive('commandExists')
             ->with('dnf')->andReturn(true);
-        
+
         $hasApt = $command->commandExists('apt-get');
         $hasDnf = $command->commandExists('dnf');
-        
+
         $this->assertFalse($hasApt);
         $this->assertTrue($hasDnf);
     }
@@ -223,10 +230,10 @@ class SetupSSLCommandTest extends TestCase
             ->with('apt-get')->andReturn(false)
             ->shouldReceive('commandExists')
             ->with('yum')->andReturn(true);
-        
+
         $hasApt = $command->commandExists('apt-get');
         $hasYum = $command->commandExists('yum');
-        
+
         $this->assertFalse($hasApt);
         $this->assertTrue($hasYum);
     }
@@ -238,7 +245,7 @@ class SetupSSLCommandTest extends TestCase
         $command->shouldAllowMockingProtectedMethods();
         $command->shouldReceive('commandExists')
             ->with('brew')->andReturn(false);
-        
+
         $command->shouldReceive('error')->andReturn(null);
         $command->shouldReceive('line')->andReturn(null);
 
@@ -250,19 +257,20 @@ class SetupSSLCommandTest extends TestCase
     #[Test]
     public function it_opens_url_on_macos(): void
     {
-        $command = new class extends SetupSSLCommand {
+        $command = new class extends SetupSSLCommand
+        {
             public string $executedCommand = '';
-            
+
             public function detectOS(): string
             {
                 return 'macos';
             }
-            
+
             public function openURL(string $url): void
             {
                 $os = $this->detectOS();
                 if ($os === 'macos') {
-                    $this->executedCommand = "open " . escapeshellarg($url);
+                    $this->executedCommand = 'open '.escapeshellarg($url);
                 }
             }
         };
@@ -275,19 +283,20 @@ class SetupSSLCommandTest extends TestCase
     #[Test]
     public function it_opens_url_on_linux(): void
     {
-        $command = new class extends SetupSSLCommand {
+        $command = new class extends SetupSSLCommand
+        {
             public string $executedCommand = '';
-            
+
             public function detectOS(): string
             {
                 return 'linux';
             }
-            
+
             public function openURL(string $url): void
             {
                 $os = $this->detectOS();
                 if ($os === 'linux') {
-                    $this->executedCommand = "xdg-open " . escapeshellarg($url);
+                    $this->executedCommand = 'xdg-open '.escapeshellarg($url);
                 }
             }
         };
@@ -300,19 +309,20 @@ class SetupSSLCommandTest extends TestCase
     #[Test]
     public function it_opens_url_on_windows(): void
     {
-        $command = new class extends SetupSSLCommand {
+        $command = new class extends SetupSSLCommand
+        {
             public string $executedCommand = '';
-            
+
             public function detectOS(): string
             {
                 return 'windows';
             }
-            
+
             public function openURL(string $url): void
             {
                 $os = $this->detectOS();
                 if ($os === 'windows') {
-                    $this->executedCommand = "start " . escapeshellarg($url);
+                    $this->executedCommand = 'start '.escapeshellarg($url);
                 }
             }
         };
@@ -325,26 +335,27 @@ class SetupSSLCommandTest extends TestCase
     #[Test]
     public function it_escapes_url_properly(): void
     {
-        $command = new class extends SetupSSLCommand {
+        $command = new class extends SetupSSLCommand
+        {
             public string $executedCommand = '';
-            
+
             public function detectOS(): string
             {
                 return 'macos';
             }
-            
+
             public function openURL(string $url): void
             {
                 $os = $this->detectOS();
                 if ($os === 'macos') {
-                    $this->executedCommand = "open " . escapeshellarg($url);
+                    $this->executedCommand = 'open '.escapeshellarg($url);
                 }
             }
         };
 
         $urlWithSpecialChars = 'https://example.com/path?param=value&other=test';
         $command->openURL($urlWithSpecialChars);
-        
+
         $this->assertStringContainsString('open', $command->executedCommand);
     }
 

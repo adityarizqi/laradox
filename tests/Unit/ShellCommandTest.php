@@ -11,27 +11,27 @@ class ShellCommandTest extends TestCase
     #[Test]
     public function it_has_correct_signature(): void
     {
-        $command = new ShellCommand();
-        
+        $command = new ShellCommand;
+
         $this->assertStringContainsString('laradox:shell', $command->getName());
     }
 
     #[Test]
     public function it_has_correct_description(): void
     {
-        $command = new ShellCommand();
-        
+        $command = new ShellCommand;
+
         $this->assertEquals('Enter a container interactively', $command->getDescription());
     }
 
     #[Test]
     public function it_accepts_service_argument(): void
     {
-        $command = new ShellCommand();
+        $command = new ShellCommand;
         $definition = $command->getDefinition();
-        
+
         $this->assertTrue($definition->hasArgument('service'));
-        
+
         $argument = $definition->getArgument('service');
         $this->assertFalse($argument->isRequired());
         $this->assertEquals('php', $argument->getDefault());
@@ -40,11 +40,11 @@ class ShellCommandTest extends TestCase
     #[Test]
     public function it_has_environment_option(): void
     {
-        $command = new ShellCommand();
+        $command = new ShellCommand;
         $definition = $command->getDefinition();
-        
+
         $this->assertTrue($definition->hasOption('environment'));
-        
+
         $option = $definition->getOption('environment');
         $this->assertEquals('development', $option->getDefault());
     }
@@ -52,11 +52,11 @@ class ShellCommandTest extends TestCase
     #[Test]
     public function it_has_user_option(): void
     {
-        $command = new ShellCommand();
+        $command = new ShellCommand;
         $definition = $command->getDefinition();
-        
+
         $this->assertTrue($definition->hasOption('user'));
-        
+
         $option = $definition->getOption('user');
         $this->assertTrue($option->acceptValue());
     }
@@ -64,11 +64,11 @@ class ShellCommandTest extends TestCase
     #[Test]
     public function it_has_shell_option(): void
     {
-        $command = new ShellCommand();
+        $command = new ShellCommand;
         $definition = $command->getDefinition();
-        
+
         $this->assertTrue($definition->hasOption('shell'));
-        
+
         $option = $definition->getOption('shell');
         $this->assertEquals('sh', $option->getDefault());
     }
@@ -76,12 +76,12 @@ class ShellCommandTest extends TestCase
     #[Test]
     public function it_validates_all_required_options_are_present(): void
     {
-        $command = new ShellCommand();
+        $command = new ShellCommand;
         $definition = $command->getDefinition();
-        
+
         // Verify all expected options exist
         $expectedOptions = ['environment', 'user', 'shell'];
-        
+
         foreach ($expectedOptions as $option) {
             $this->assertTrue(
                 $definition->hasOption($option),
@@ -93,11 +93,11 @@ class ShellCommandTest extends TestCase
     #[Test]
     public function it_has_service_argument_with_default_value(): void
     {
-        $command = new ShellCommand();
+        $command = new ShellCommand;
         $definition = $command->getDefinition();
-        
+
         $this->assertTrue($definition->hasArgument('service'));
-        
+
         $argument = $definition->getArgument('service');
         $this->assertEquals('php', $argument->getDefault());
     }
@@ -105,17 +105,17 @@ class ShellCommandTest extends TestCase
     #[Test]
     public function it_extends_illuminate_command(): void
     {
-        $command = new ShellCommand();
-        
+        $command = new ShellCommand;
+
         $this->assertInstanceOf(\Illuminate\Console\Command::class, $command);
     }
 
     #[Test]
     public function environment_option_accepts_values(): void
     {
-        $command = new ShellCommand();
+        $command = new ShellCommand;
         $definition = $command->getDefinition();
-        
+
         $option = $definition->getOption('environment');
         $this->assertTrue($option->acceptValue());
     }
@@ -123,9 +123,9 @@ class ShellCommandTest extends TestCase
     #[Test]
     public function user_option_is_optional(): void
     {
-        $command = new ShellCommand();
+        $command = new ShellCommand;
         $definition = $command->getDefinition();
-        
+
         $option = $definition->getOption('user');
         $this->assertNull($option->getDefault());
     }
@@ -133,9 +133,9 @@ class ShellCommandTest extends TestCase
     #[Test]
     public function shell_option_has_sh_default(): void
     {
-        $command = new ShellCommand();
+        $command = new ShellCommand;
         $definition = $command->getDefinition();
-        
+
         $option = $definition->getOption('shell');
         $this->assertEquals('sh', $option->getDefault());
     }
@@ -143,9 +143,9 @@ class ShellCommandTest extends TestCase
     #[Test]
     public function service_argument_defaults_to_php(): void
     {
-        $command = new ShellCommand();
+        $command = new ShellCommand;
         $definition = $command->getDefinition();
-        
+
         $argument = $definition->getArgument('service');
         $this->assertEquals('php', $argument->getDefault());
     }
@@ -153,8 +153,8 @@ class ShellCommandTest extends TestCase
     #[Test]
     public function it_uses_checks_docker_trait(): void
     {
-        $command = new ShellCommand();
-        
+        $command = new ShellCommand;
+
         $this->assertTrue(
             method_exists($command, 'checkDocker'),
             'ShellCommand should use ChecksDocker trait'
@@ -164,8 +164,8 @@ class ShellCommandTest extends TestCase
     #[Test]
     public function it_has_is_service_running_method(): void
     {
-        $command = new ShellCommand();
-        
+        $command = new ShellCommand;
+
         $this->assertTrue(
             method_exists($command, 'isServiceRunning'),
             'ShellCommand should have isServiceRunning method'
@@ -175,8 +175,8 @@ class ShellCommandTest extends TestCase
     #[Test]
     public function it_has_detect_available_shell_method(): void
     {
-        $command = new ShellCommand();
-        
+        $command = new ShellCommand;
+
         $this->assertTrue(
             method_exists($command, 'detectAvailableShell'),
             'ShellCommand should have detectAvailableShell method'
@@ -186,8 +186,8 @@ class ShellCommandTest extends TestCase
     #[Test]
     public function it_has_file_option(): void
     {
-        $command = new ShellCommand();
-        
+        $command = new ShellCommand;
+
         $definition = $command->getDefinition();
         $this->assertTrue($definition->hasOption('file'));
     }
@@ -195,8 +195,8 @@ class ShellCommandTest extends TestCase
     #[Test]
     public function it_file_option_has_shortcut_f(): void
     {
-        $command = new ShellCommand();
-        
+        $command = new ShellCommand;
+
         $definition = $command->getDefinition();
         $option = $definition->getOption('file');
         $this->assertEquals('f', $option->getShortcut());
@@ -208,7 +208,7 @@ class ShellCommandTest extends TestCase
         $customFile = 'my-custom-compose.yml';
         $composeFile = base_path($customFile);
         $command = sprintf('docker-compose -f %s exec', escapeshellarg($composeFile));
-        
+
         $this->assertStringContainsString('my-custom-compose.yml', $command);
         $this->assertStringContainsString('exec', $command);
     }
@@ -217,11 +217,11 @@ class ShellCommandTest extends TestCase
     public function it_supports_both_docker_compose_commands(): void
     {
         $composeFile = base_path('docker-compose.development.yml');
-        
+
         // Test with docker compose (V2)
         $commandV2 = sprintf('docker compose -f %s exec', escapeshellarg($composeFile));
         $this->assertStringContainsString('docker compose', $commandV2);
-        
+
         // Test with docker-compose (V1)
         $commandV1 = sprintf('docker-compose -f %s exec', escapeshellarg($composeFile));
         $this->assertStringContainsString('docker-compose', $commandV1);
@@ -231,10 +231,10 @@ class ShellCommandTest extends TestCase
     public function it_constructs_ps_command_with_docker_compose(): void
     {
         $composeFile = base_path('docker-compose.development.yml');
-        
+
         $commandV1 = sprintf('docker-compose -f %s ps --services --filter "status=running"', escapeshellarg($composeFile));
         $this->assertStringContainsString('ps --services', $commandV1);
-        
+
         $commandV2 = sprintf('docker compose -f %s ps --services --filter "status=running"', escapeshellarg($composeFile));
         $this->assertStringContainsString('ps --services', $commandV2);
     }

@@ -4,6 +4,8 @@ x-php: &php
     dockerfile: php.dockerfile
     args:
       ENVIRONMENT: development
+      USER_ID: ${LARADOX_USER_ID:-1000}
+      GROUP_ID: ${LARADOX_GROUP_ID:-1000}
   restart: unless-stopped
   working_dir: /srv
   volumes:
@@ -21,6 +23,7 @@ services:
       - "${LARADOX_HTTPS_PORT:-443}:443"
     environment:
       - LARADOX_DOMAIN=${LARADOX_DOMAIN:-laravel.docker.localhost}
+      - LARADOX_FRANKENPHP_PORT=${LARADOX_FRANKENPHP_PORT:-8080}
     volumes:
       - ./docker/nginx/nginx.conf:/etc/nginx/nginx.conf:ro
       - ./docker/nginx/conf.d/app.conf:/etc/nginx/templates/app.conf.template
@@ -52,7 +55,7 @@ services:
   php:
     <<: *php
     environment:
-      - LARADOX_FRANKENPHP_PORT=:${LARADOX_FRANKENPHP_PORT:-8080}
+      - LARADOX_FRANKENPHP_PORT=${LARADOX_FRANKENPHP_PORT:-8080}
     healthcheck:
       test: ["CMD", "php", "-v"]
       interval: 30s
