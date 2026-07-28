@@ -3,6 +3,7 @@
 namespace Laradox\Tests;
 
 use Illuminate\Support\Facades\File;
+use Throwable;
 
 abstract class FeatureTestCase extends TestCase
 {
@@ -21,7 +22,7 @@ abstract class FeatureTestCase extends TestCase
     {
         // Clean up test artifacts after each test
         $this->cleanupTestFiles();
-        
+
         parent::tearDown();
     }
 
@@ -31,7 +32,7 @@ abstract class FeatureTestCase extends TestCase
     protected function cleanupTestFiles(): void
     {
         try {
-            if (!function_exists('base_path')) {
+            if (! function_exists('base_path')) {
                 return;
             }
 
@@ -54,7 +55,7 @@ abstract class FeatureTestCase extends TestCase
                     }
                 }
             }
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             // Silently catch any errors during cleanup
         }
     }

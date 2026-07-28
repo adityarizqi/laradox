@@ -93,11 +93,12 @@ class MyNewTest extends TestCase
 
 ## Dependencies
 
-- PHPUnit ^10.0|^11.0
+- PHPUnit ^10.0|^11.0|^12.0
 - Orchestra Testbench:
   - ^8.0 for Laravel 10.x
   - ^9.0 for Laravel 11.x
   - ^10.0 for Laravel 12.x
+  - ^11.0 for Laravel 13.x
 
 ## Test Matrix
 
@@ -108,6 +109,18 @@ The test suite is tested against multiple PHP and Laravel versions in CI:
 | 10.x | 8.2, 8.3 | ^8.0 |
 | 11.x | 8.2, 8.3, 8.4 | ^9.0 |
 | 12.x | 8.2, 8.3, 8.4 | ^10.0 |
+| 13.x | 8.3, 8.4 | ^11.0 |
+
+> Laravel 13.x requires PHP 8.3 or higher, so the 8.2 combination is intentionally absent.
+
+## Code Style
+
+Code style is enforced with [Laravel Pint](https://laravel.com/docs/pint) and checked in CI:
+
+```bash
+composer lint     # report violations without changing files
+composer format   # apply fixes
+```
 
 All test combinations are tested in GitHub Actions CI/CD pipeline.
 

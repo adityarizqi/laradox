@@ -36,13 +36,13 @@ class SetupSSLCommand extends Command
         $this->info('Setting up SSL certificates...');
 
         // Check if mkcert is installed
-        if (!$this->checkMkcert()) {
+        if (! $this->checkMkcert()) {
             return $this->handleMissingMkcert();
         }
 
         $domain = $this->option('domain') ?: config('laradox.domain');
         $additionalDomains = $this->option('additional-domains') ?: config('laradox.additional_domains', []);
-        
+
         $domains = array_merge([$domain], $additionalDomains);
         $domainsString = implode(' ', array_map('escapeshellarg', $domains));
 
@@ -51,7 +51,7 @@ class SetupSSLCommand extends Command
 
         // Ensure SSL directory exists
         $sslDir = dirname($certPath);
-        if (!File::exists($sslDir)) {
+        if (! File::exists($sslDir)) {
             File::makeDirectory($sslDir, 0755, true);
         }
 
@@ -71,7 +71,8 @@ class SetupSSLCommand extends Command
             $this->info('✓ SSL certificates generated successfully!');
             $this->line("Certificate: {$certPath}");
             $this->line("Key: {$keyPath}");
-            $this->line("Domains: " . implode(', ', $domains));
+            $this->line('Domains: '.implode(', ', $domains));
+
             return self::SUCCESS;
         }
 
@@ -89,13 +90,12 @@ class SetupSSLCommand extends Command
     protected function checkMkcert(): bool
     {
         exec('which mkcert', $output, $returnCode);
+
         return $returnCode === 0;
     }
 
     /**
      * Handle missing mkcert installation.
-     *
-     * @return int
      */
     protected function handleMissingMkcert(): int
     {
@@ -156,8 +156,6 @@ class SetupSSLCommand extends Command
 
     /**
      * Install mkcert on Linux.
-     *
-     * @return int
      */
     protected function installMkcertLinux(): int
     {
@@ -188,6 +186,7 @@ class SetupSSLCommand extends Command
         } else {
             $this->error('Could not detect package manager (apt, yum, or dnf).');
             $this->line('Please install mkcert manually: https://github.com/FiloSottile/mkcert');
+
             return self::FAILURE;
         }
 
@@ -196,6 +195,7 @@ class SetupSSLCommand extends Command
             passthru($command, $returnCode);
             if ($returnCode !== 0) {
                 $this->error('Installation failed.');
+
                 return self::FAILURE;
             }
         }
@@ -211,15 +211,14 @@ class SetupSSLCommand extends Command
 
     /**
      * Install mkcert on macOS using Homebrew.
-     *
-     * @return int
      */
     protected function installMkcertMacOS(): int
     {
-        if (!$this->commandExists('brew')) {
+        if (! $this->commandExists('brew')) {
             $this->error('Homebrew is not installed.');
             $this->line('Please install Homebrew first: https://brew.sh');
             $this->line('Or install mkcert manually: https://github.com/FiloSottile/mkcert');
+
             return self::FAILURE;
         }
 
@@ -232,6 +231,7 @@ class SetupSSLCommand extends Command
 
         if ($returnCode !== 0) {
             $this->error('Installation failed.');
+
             return self::FAILURE;
         }
 
@@ -246,32 +246,27 @@ class SetupSSLCommand extends Command
 
     /**
      * Check if a command exists.
-     *
-     * @param string $command
-     * @return bool
      */
     protected function commandExists(string $command): bool
     {
         exec("which {$command}", $output, $returnCode);
+
         return $returnCode === 0;
     }
 
     /**
      * Open a URL in the default browser.
-     *
-     * @param string $url
-     * @return void
      */
     protected function openURL(string $url): void
     {
         $os = $this->detectOS();
 
         if ($os === 'macos') {
-            exec("open " . escapeshellarg($url));
+            exec('open '.escapeshellarg($url));
         } elseif ($os === 'linux') {
-            exec("xdg-open " . escapeshellarg($url));
+            exec('xdg-open '.escapeshellarg($url));
         } elseif ($os === 'windows') {
-            exec("start " . escapeshellarg($url));
+            exec('start '.escapeshellarg($url));
         }
     }
 }

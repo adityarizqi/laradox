@@ -6,10 +6,36 @@ on:
   pull_request:
     branches: [ main ]
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
+  lint:
+    runs-on: ubuntu-latest
+    name: Code Style (Pint)
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: 8.3
+          coverage: none
+
+      - name: Install dependencies
+        uses: ramsey/composer-install@v3
+        with:
+          dependency-versions: highest
+
+      - name: Check code style
+        run: vendor/bin/pint --test
+
   test:
     runs-on: ubuntu-latest
-    
+
     strategy:
       fail-fast: false
       matrix:
@@ -18,21 +44,26 @@ jobs:
           - php: 8.2
             laravel: 10.*
             testbench: ^8.0
+            eol: true
           - php: 8.3
             laravel: 10.*
             testbench: ^8.0
-          
+            eol: true
+
           # Laravel 11.x - PHP 8.2, 8.3, 8.4
           - php: 8.2
             laravel: 11.*
             testbench: ^9.0
+            eol: true
           - php: 8.3
             laravel: 11.*
             testbench: ^9.0
+            eol: true
           - php: 8.4
             laravel: 11.*
             testbench: ^9.0
-          
+            eol: true
+
           # Laravel 12.x - PHP 8.2, 8.3, 8.4
           - php: 8.2
             laravel: 12.*
@@ -43,7 +74,16 @@ jobs:
           - php: 8.4
             laravel: 12.*
             testbench: ^10.0
-            
+
+          # Laravel 13.x - PHP 8.3, 8.4 (Laravel 13 requires PHP >= 8.3)
+          - php: 8.3
+            laravel: 13.*
+            testbench: ^11.0
+          - php: 8.4
+            laravel: 13.*
+            testbench: ^11.0
+            coverage: true
+
     name: PHP ${{ matrix.php }} - Laravel ${{ matrix.laravel }}
 
     steps:
@@ -55,27 +95,44 @@ jobs:
         with:
           php-version: ${{ matrix.php }}
           extensions: dom, curl, libxml, mbstring, zip, pcntl, pdo, sqlite, pdo_sqlite, bcmath, soap, intl, gd, exif, iconv
-          coverage: pcov
+          coverage: ${{ matrix.coverage && 'pcov' || 'none' }}
 
       - name: Setup problem matchers
         run: |
           echo "::add-matcher::${{ runner.tool_cache }}/php.json"
           echo "::add-matcher::${{ runner.tool_cache }}/phpunit.json"
 
+      # Laravel 10.x and 11.x are past their security-support windows, so every
+      # release carries advisories that will never be patched and Composer
+      # refuses to resolve them at all. We still want to know the package works
+      # on those versions, so the block is lifted for those rows only — 12.x and
+      # 13.x keep it on, so a new advisory against a supported release will
+      # still fail CI. Note that --no-audit / COMPOSER_NO_AUDIT do not affect
+      # this; only the policy config does (composer/composer#12607).
+      - name: Allow resolving end-of-life framework versions
+        if: ${{ matrix.eol }}
+        run: composer config policy.advisories.block false
+
       - name: Install dependencies
         run: |
           composer require "laravel/framework:${{ matrix.laravel }}" "orchestra/testbench:${{ matrix.testbench }}" --no-interaction --no-update
-          composer update --prefer-dist --no-interaction
+          composer update --prefer-dist --no-interaction --no-progress
 
-      - name: List Installed Dependencies
+      - name: List installed dependencies
         run: composer show -D
 
       - name: Execute tests
+        if: ${{ !matrix.coverage }}
+        run: vendor/bin/phpunit
+
+      - name: Execute tests with coverage
+        if: ${{ matrix.coverage }}
         run: vendor/bin/phpunit --coverage-text --coverage-clover=coverage.xml
 
       - name: Upload coverage to Codecov
-        uses: codecov/codecov-action@v4
-        if: matrix.php == '8.3' && matrix.laravel == '11.*'
+        if: ${{ matrix.coverage }}
+        uses: codecov/codecov-action@v5
         with:
-          file: ./coverage.xml
+          files: ./coverage.xml
           fail_ci_if_error: false
+          token: ${{ secrets.CODECOV_TOKEN }}

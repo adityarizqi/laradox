@@ -29,8 +29,8 @@ Comparison of performance measurements between *without* and *with* FrankenPHP u
 
 ## Requirements
 
-- PHP 8.2 or higher
-- Laravel 10.x, 11.x, or 12.x
+- PHP 8.2 or higher (PHP 8.3+ when using Laravel 13.x)
+- Laravel 10.x, 11.x, 12.x, or 13.x
 - Docker and Docker Compose (auto-detected, installation prompted if missing)
 - [mkcert](https://github.com/FiloSottile/mkcert) (auto-detected, installation prompted if missing)
 
@@ -316,6 +316,34 @@ Laradox includes the following services:
 - **node**: Node.js for asset compilation
 - **scheduler**: Laravel scheduler (development) or Supercronic (production)
 - **queue**: Laravel queue worker with Supervisor (production only)
+
+### PHP Image
+
+The `php` service is built from `docker/php/php.dockerfile` — a multi-stage build where all
+compilation happens in a throwaway `builder` stage, so the runtime image only carries the
+shared libraries it actually needs.
+
+**Bundled extensions:** `bcmath`, `excimer`, `gd` (with JPEG/WebP/FreeType), `intl`, `pcntl`,
+`pdo_mysql`, `pdo_pgsql`, `redis`, `uv`, `zip`, plus everything in the FrankenPHP base image
+(`opcache`, `mbstring`, `dom`, `curl`, `sqlite3`, …).
+
+**OPcache** is tuned per environment: development validates timestamps so `--watch` reloads
+pick up edits, while production disables timestamp validation and enables the tracing JIT.
+Because production caches compiled code indefinitely, deploys need an image rebuild or
+`php artisan octane:reload`.
+
+**Build args** — override in the `build.args` block of your compose file:
+
+| Arg | Default | Purpose |
+|-----|---------|---------|
+| `FRANKENPHP_VERSION` | `1.12` | FrankenPHP base image version |
+| `PHP_VERSION` | `8.4` | PHP version of the base image |
+| `ENVIRONMENT` | `development` | Selects the `development` or `production` stage |
+| `USER_ID` / `GROUP_ID` | `1000` | Host uid/gid, so bind-mounted files stay writable |
+| `SUPERCRONIC_VERSION` | `0.2.48` | Supercronic release to download |
+
+The image is architecture-aware, so it builds on both `amd64` and `arm64` hosts
+(Apple Silicon included).
 
 ### Scheduler Configuration
 

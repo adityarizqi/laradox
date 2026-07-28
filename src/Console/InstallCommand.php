@@ -44,7 +44,7 @@ class InstallCommand extends Command
 
         // Create SSL directory if it doesn't exist
         $sslDir = base_path('docker/nginx/ssl');
-        if (!File::exists($sslDir)) {
+        if (! File::exists($sslDir)) {
             File::makeDirectory($sslDir, 0755, true);
             $this->info('Created SSL directory: docker/nginx/ssl');
         }

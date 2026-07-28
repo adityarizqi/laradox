@@ -52,7 +52,7 @@ class UpCommandTest extends FeatureTestCase
         $this->createTestSslDirectory();
         File::put(config('laradox.ssl.cert_path'), 'dummy cert');
         File::put(config('laradox.ssl.key_path'), 'dummy key');
-        
+
         // Create nginx configs
         $httpsConfigPath = base_path('docker/nginx/conf.d/app-https.conf');
         File::ensureDirectoryExists(dirname($httpsConfigPath));
@@ -70,7 +70,7 @@ class UpCommandTest extends FeatureTestCase
         $this->createTestSslDirectory();
         File::put(config('laradox.ssl.cert_path'), 'dummy cert');
         File::put(config('laradox.ssl.key_path'), 'dummy key');
-        
+
         // Create nginx configs
         $httpsConfigPath = base_path('docker/nginx/conf.d/app-https.conf');
         File::ensureDirectoryExists(dirname($httpsConfigPath));
@@ -87,7 +87,7 @@ class UpCommandTest extends FeatureTestCase
         $this->createTestDockerComposeFile();
         $this->createTestSslDirectory();
         File::put(config('laradox.ssl.cert_path'), 'dummy cert');
-        File::put(config('laradox.ssl.key_path'), 'dummy key');        
+        File::put(config('laradox.ssl.key_path'), 'dummy key');
         // Create nginx configs
         $httpsConfigPath = base_path('docker/nginx/conf.d/app-https.conf');
         File::ensureDirectoryExists(dirname($httpsConfigPath));
@@ -131,15 +131,15 @@ class UpCommandTest extends FeatureTestCase
     {
         $this->createTestDockerComposeFile('development');
         $this->createTestSslDirectory();
-        
+
         // Create both nginx configs
         $httpConfigPath = base_path('docker/nginx/conf.d/app-http.conf');
         $httpsConfigPath = base_path('docker/nginx/conf.d/app-https.conf');
-        
+
         File::ensureDirectoryExists(dirname($httpConfigPath));
         File::put($httpConfigPath, 'http config');
         File::put($httpsConfigPath, 'https config');
-        
+
         // Create valid SSL certificates
         File::put(config('laradox.ssl.cert_path'), 'dummy cert');
         File::put(config('laradox.ssl.key_path'), 'dummy key');
@@ -154,15 +154,15 @@ class UpCommandTest extends FeatureTestCase
     {
         $this->createTestDockerComposeFile('development');
         $this->createTestSslDirectory();
-        
+
         // Create both nginx configs
         $httpConfigPath = base_path('docker/nginx/conf.d/app-http.conf');
         $httpsConfigPath = base_path('docker/nginx/conf.d/app-https.conf');
-        
+
         File::ensureDirectoryExists(dirname($httpConfigPath));
         File::put($httpConfigPath, 'http config');
         File::put($httpsConfigPath, 'https config');
-        
+
         // Create valid SSL certificates
         File::put(config('laradox.ssl.cert_path'), 'dummy cert');
         File::put(config('laradox.ssl.key_path'), 'dummy key');
@@ -177,11 +177,11 @@ class UpCommandTest extends FeatureTestCase
     {
         $this->createTestDockerComposeFile('development');
         $this->createTestSslDirectory();
-        
+
         // Create nginx configs but NO certificates
         $httpConfigPath = base_path('docker/nginx/conf.d/app-http.conf');
         $httpsConfigPath = base_path('docker/nginx/conf.d/app-https.conf');
-        
+
         File::ensureDirectoryExists(dirname($httpConfigPath));
         File::put($httpConfigPath, 'http config');
         File::put($httpsConfigPath, 'https config');
@@ -196,15 +196,15 @@ class UpCommandTest extends FeatureTestCase
     {
         $this->createTestDockerComposeFile('development');
         $this->createTestSslDirectory();
-        
+
         // Create both nginx configs
         $httpConfigPath = base_path('docker/nginx/conf.d/app-http.conf');
         $httpsConfigPath = base_path('docker/nginx/conf.d/app-https.conf');
-        
+
         File::ensureDirectoryExists(dirname($httpConfigPath));
         File::put($httpConfigPath, 'http config');
         File::put($httpsConfigPath, 'https config');
-        
+
         // Even with SSL certificates, should use HTTP
         File::put(config('laradox.ssl.cert_path'), 'dummy cert');
         File::put(config('laradox.ssl.key_path'), 'dummy key');
@@ -219,11 +219,11 @@ class UpCommandTest extends FeatureTestCase
     {
         $this->createTestDockerComposeFile('production');
         $this->createTestSslDirectory();
-        
+
         // Create nginx configs but NO certificates
         $httpConfigPath = base_path('docker/nginx/conf.d/app-http.conf');
         $httpsConfigPath = base_path('docker/nginx/conf.d/app-https.conf');
-        
+
         File::ensureDirectoryExists(dirname($httpConfigPath));
         File::put($httpConfigPath, 'http config');
         File::put($httpsConfigPath, 'https config');
@@ -248,9 +248,9 @@ class UpCommandTest extends FeatureTestCase
         $this->createTestSslDirectory();
         File::put(config('laradox.ssl.cert_path'), 'dummy cert');
         File::put(config('laradox.ssl.key_path'), 'dummy key');
-        
+
         $result = $this->artisan('laradox:up', ['--detach' => true]);
-        
+
         // Command should either succeed with Docker or fail with error message
         $this->assertContains($result->run(), [0, 1]);
     }
@@ -263,11 +263,10 @@ class UpCommandTest extends FeatureTestCase
         $this->createTestSslDirectory();
         File::put(config('laradox.ssl.cert_path'), 'dummy cert');
         File::put(config('laradox.ssl.key_path'), 'dummy key');
-        
+
         $result = $this->artisan('laradox:up', ['--detach' => true]);
-        
+
         // Command should check for Docker Compose availability
         $this->assertContains($result->run(), [0, 1]);
     }
 }
-

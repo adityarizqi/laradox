@@ -8,6 +8,7 @@ use Laradox\Console\Concerns\ChecksDocker;
 class UpCommand extends Command
 {
     use ChecksDocker;
+
     /**
      * The name and signature of the console command.
      *
@@ -40,31 +41,33 @@ class UpCommand extends Command
     public function handle(): int
     {
         // Check if Docker is installed
-        if (!$this->checkDocker()) {
+        if (! $this->checkDocker()) {
             return $this->handleMissingDocker();
         }
 
         // Check if Docker Compose is available
-        if (!$this->checkDockerCompose()) {
+        if (! $this->checkDockerCompose()) {
             $this->newLine();
             $this->error('✗ Docker Compose is not available.');
             $this->line('Please ensure Docker Compose is installed and running.');
             $this->line('Visit: https://docs.docker.com/compose/install/');
             $this->newLine();
+
             return self::FAILURE;
         }
 
         $env = $this->option('environment');
         $customFile = $this->option('file');
-        
+
         // Determine compose file path
         $composeFile = $this->resolveComposeFile($env, $customFile);
         if ($composeFile === false) {
             return self::FAILURE;
         }
 
-        if (!file_exists($composeFile)) {
+        if (! file_exists($composeFile)) {
             $this->error("Docker Compose file not found: {$composeFile}");
+
             return self::FAILURE;
         }
 
@@ -83,12 +86,12 @@ class UpCommand extends Command
         }
 
         // Copy the appropriate nginx config
-        if (!$this->copyNginxConfig($nginxConfigSource)) {
+        if (! $this->copyNginxConfig($nginxConfigSource)) {
             return self::FAILURE;
         }
 
         // Check if domain is added to hosts file (for non-.localhost domains)
-        if (!$this->checkHostsFileConfirmation()) {
+        if (! $this->checkHostsFileConfirmation()) {
             return self::FAILURE;
         }
 
@@ -98,17 +101,18 @@ class UpCommand extends Command
             $this->warn('⚠ Containers are already running!');
             $this->line('Use "php artisan laradox:down" to stop them first, or restart with "docker compose restart"');
             $this->newLine();
-            
-            if (!$this->confirm('Do you want to restart the containers?', false)) {
+
+            if (! $this->confirm('Do you want to restart the containers?', false)) {
                 $this->info('Cancelled.');
+
                 return self::SUCCESS;
             }
-            
+
             $this->info('Restarting containers...');
             $dockerCompose = $this->getDockerComposeCommand();
             $restartCommand = sprintf('%s -f %s restart', $dockerCompose, escapeshellarg($composeFile));
             passthru($restartCommand, $returnCode);
-            
+
             if ($returnCode === 0) {
                 $this->newLine();
                 $this->info('✓ Containers restarted successfully!');
@@ -116,7 +120,7 @@ class UpCommand extends Command
                 $protocol = $sslExists && $forceSsl !== 'false' ? 'https' : 'http';
                 $this->line("Visit: {$protocol}://{$domain}");
             }
-            
+
             return $returnCode === 0 ? self::SUCCESS : self::FAILURE;
         }
 
@@ -157,9 +161,9 @@ class UpCommand extends Command
     /**
      * Choose the nginx configuration file to use based on environment, SSL availability, and the force-ssl option.
      *
-     * @param string $env The environment name, typically 'development' or 'production'.
-     * @param bool $sslExists True if both SSL certificate and key files exist at configured paths.
-     * @param string|null $forceSsl If provided, coerced to boolean: `"true"` requires HTTPS, `"false"` forces HTTP; `null` means auto-detect.
+     * @param  string  $env  The environment name, typically 'development' or 'production'.
+     * @param  bool  $sslExists  True if both SSL certificate and key files exist at configured paths.
+     * @param  string|null  $forceSsl  If provided, coerced to boolean: `"true"` requires HTTPS, `"false"` forces HTTP; `null` means auto-detect.
      * @return string|false The chosen nginx config filename (`'app-https.conf'` or `'app-http.conf'`), or `false` when the operation is cancelled or required SSL prerequisites are missing.
      */
     protected function determineNginxConfig(string $env, bool $sslExists, ?string $forceSsl): string|false
@@ -170,10 +174,10 @@ class UpCommand extends Command
         // Handle --force-ssl flag
         if ($forceSsl !== null) {
             $forceSslBool = filter_var($forceSsl, FILTER_VALIDATE_BOOLEAN);
-            
+
             if ($forceSslBool) {
                 // Force SSL: require certificates
-                if (!$sslExists) {
+                if (! $sslExists) {
                     $this->newLine();
                     $this->error('✗ SSL is forced but certificates not found!');
                     $this->line('Certificates must exist at:');
@@ -182,19 +186,22 @@ class UpCommand extends Command
                     $this->newLine();
                     $this->comment('Generate certificates with: php artisan laradox:setup-ssl');
                     $this->newLine();
+
                     return false;
                 }
                 $this->info('✓ Force SSL enabled, using HTTPS configuration');
+
                 return 'app-https.conf';
             } else {
                 // Force HTTP only
                 $this->warn('⚠ Force HTTP enabled, SSL disabled');
+
                 return 'app-http.conf';
             }
         }
 
         // Production MUST have SSL (unless explicitly forced to HTTP)
-        if ($env === 'production' && !$sslExists) {
+        if ($env === 'production' && ! $sslExists) {
             $this->newLine();
             $this->error('✗ SSL certificates are required for production environment!');
             $this->line('Certificates must exist at:');
@@ -204,11 +211,12 @@ class UpCommand extends Command
             $this->comment('Generate certificates with: php artisan laradox:setup-ssl');
             $this->comment('Or use --force-ssl=false to skip SSL (not recommended for production)');
             $this->newLine();
+
             return false;
         }
 
         // Development: ask user preference if no SSL
-        if ($env === 'development' && !$sslExists) {
+        if ($env === 'development' && ! $sslExists) {
             $this->newLine();
             $this->warn('⚠ SSL certificates not found!');
             $this->line('Certificates expected at:');
@@ -220,18 +228,21 @@ class UpCommand extends Command
             $this->line('2. Continue with HTTP only (port 80)');
             $this->newLine();
 
-            if (!$this->confirm('Do you want to continue with HTTP only?', false)) {
+            if (! $this->confirm('Do you want to continue with HTTP only?', false)) {
                 $this->info('Cancelled. Please setup SSL certificates first.');
+
                 return false;
             }
 
             $this->warn('Using HTTP-only configuration...');
+
             return 'app-http.conf';
         }
 
         // Use HTTPS config when SSL exists
         if ($sslExists) {
             $this->info('✓ SSL certificates found, using HTTPS configuration');
+
             return 'app-https.conf';
         }
 
@@ -244,7 +255,7 @@ class UpCommand extends Command
      * If the named source file does not exist or the copy operation fails,
      * the method returns false.
      *
-     * @param string $configFile Filename of the nginx configuration to copy (e.g. `app-https.conf`).
+     * @param  string  $configFile  Filename of the nginx configuration to copy (e.g. `app-https.conf`).
      * @return bool True on successful copy, false on failure.
      */
     protected function copyNginxConfig(string $configFile): bool
@@ -252,27 +263,30 @@ class UpCommand extends Command
         $sourcePath = base_path("docker/nginx/conf.d/{$configFile}");
         $targetPath = base_path('docker/nginx/conf.d/app.conf');
 
-        if (!file_exists($sourcePath)) {
+        if (! file_exists($sourcePath)) {
             $this->newLine();
             $this->error('✗ Failed to configure nginx!');
             $this->line("Configuration file not found: {$sourcePath}");
             $this->newLine();
+
             return false;
         }
 
         $copyResult = copy($sourcePath, $targetPath);
-        
-        if (!$copyResult) {
+
+        if (! $copyResult) {
             $this->newLine();
             $this->error('✗ Failed to configure nginx!');
             $this->line('Could not copy nginx configuration file.');
             $this->line("Source: {$sourcePath}");
             $this->line("Target: {$targetPath}");
             $this->newLine();
+
             return false;
         }
 
         $this->line("Using nginx configuration: {$configFile}");
+
         return true;
     }
 
@@ -287,7 +301,7 @@ class UpCommand extends Command
     protected function checkHostsFileConfirmation(): bool
     {
         $domain = config('laradox.domain');
-        
+
         // Skip check for .localhost domains (they work without hosts file)
         if (str_ends_with($domain, '.localhost')) {
             return true;
@@ -299,7 +313,7 @@ class UpCommand extends Command
         }
 
         // If running non-interactively without --skip-hosts-check, fail with clear error
-        if (!$this->input->isInteractive()) {
+        if (! $this->input->isInteractive()) {
             $this->newLine();
             $this->error('✗ Custom domain requires hosts file confirmation!');
             $this->line("Domain: {$domain}");
@@ -312,6 +326,7 @@ class UpCommand extends Command
             $this->comment('To configure hosts file, add this line:');
             $this->line("  127.0.0.1 {$domain}");
             $this->newLine();
+
             return false;
         }
 
@@ -326,8 +341,9 @@ class UpCommand extends Command
         $this->comment('On Windows: Edit C:\Windows\System32\drivers\etc\hosts as Administrator');
         $this->newLine();
 
-        if (!$this->confirm('Have you added the domain to your hosts file?', false)) {
+        if (! $this->confirm('Have you added the domain to your hosts file?', false)) {
             $this->info('Cancelled. Please add the domain to your hosts file first.');
+
             return false;
         }
 
