@@ -4,6 +4,45 @@ All notable changes to `laradox` will be documented in this file.
 
 ## [Unreleased]
 
+## 2.0.8 - 2026-07-28
+
+### Added
+- Laravel 13.x support (`illuminate/support` and `illuminate/console` now allow `^13.0`)
+  - Orchestra Testbench `^11.0` and PHPUnit `^12.0` accepted in `require-dev`
+  - CI matrix covers Laravel 13.x on PHP 8.3 and 8.4 (Laravel 13 requires PHP >= 8.3)
+- Laravel Pint for code style, with `composer lint` / `composer format` scripts and a CI job
+- `pdo_mysql` extension in the PHP image, alongside the existing `pdo_pgsql`
+- `gd` is now built with JPEG, WebP, and FreeType support
+- Environment-specific OPcache tuning: timestamp validation in development, tracing JIT in production
+- `FRANKENPHP_VERSION`, `PHP_VERSION`, and `SUPERCRONIC_VERSION` build args, so base
+  versions can be overridden without editing the Dockerfile
+
+### Fixed
+- Production containers no longer start Octane with `--watch`. The environment check lived in
+  `CMD`, which is evaluated by the container shell at runtime and could not see the
+  `ENVIRONMENT` build arg, so every container took the development branch. The command is now
+  defined per build stage.
+- Octane now binds to `0.0.0.0` instead of Octane's `127.0.0.1` default, so Nginx can reach the
+  `php` service.
+- `LARADOX_FRANKENPHP_PORT` no longer carries a leading colon, which produced an invalid
+  `--port=:8080`. The Nginx upstream is templated from the same variable, so changing the port
+  now takes effect across the whole stack.
+- The PHP image builds on `arm64` hosts (Apple Silicon). Supercronic was pinned to the
+  `amd64` binary regardless of target architecture.
+- `LARADOX_USER_ID` / `LARADOX_GROUP_ID` are passed through to the image build; previously the
+  `USER_ID`/`GROUP_ID` build args always fell back to `1000`.
+- `COMPOSER_HOME` and `COMPOSER_CACHE_DIR` now match the paths the development compose file
+  mounts, so the host Composer cache and `auth.json` are actually used.
+
+### Changed
+- Base image updated from FrankenPHP 1.7 to 1.12
+- Builder stage consolidated into fewer layers, and build-only packages whose extensions
+  already ship with the base image (`mbstring`, `libxml2`, `oniguruma`, `curl-dev`) removed
+- Supercronic updated from 0.2.29 to 0.2.48
+- Coverage reporting moved out of `phpunit.xml` and onto the CI command, so local test runs no
+  longer require a coverage driver
+
+
 ### Added
 - Laravel 13.x support (`illuminate/support` and `illuminate/console` now allow `^13.0`)
   - Orchestra Testbench `^11.0` and PHPUnit `^12.0` accepted in `require-dev`
