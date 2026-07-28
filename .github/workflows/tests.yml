@@ -44,20 +44,25 @@ jobs:
           - php: 8.2
             laravel: 10.*
             testbench: ^8.0
+            eol: true
           - php: 8.3
             laravel: 10.*
             testbench: ^8.0
+            eol: true
 
           # Laravel 11.x - PHP 8.2, 8.3, 8.4
           - php: 8.2
             laravel: 11.*
             testbench: ^9.0
+            eol: true
           - php: 8.3
             laravel: 11.*
             testbench: ^9.0
+            eol: true
           - php: 8.4
             laravel: 11.*
             testbench: ^9.0
+            eol: true
 
           # Laravel 12.x - PHP 8.2, 8.3, 8.4
           - php: 8.2
@@ -96,6 +101,17 @@ jobs:
         run: |
           echo "::add-matcher::${{ runner.tool_cache }}/php.json"
           echo "::add-matcher::${{ runner.tool_cache }}/phpunit.json"
+
+      # Laravel 10.x and 11.x are past their security-support windows, so every
+      # release carries advisories that will never be patched and Composer
+      # refuses to resolve them at all. We still want to know the package works
+      # on those versions, so the block is lifted for those rows only — 12.x and
+      # 13.x keep it on, so a new advisory against a supported release will
+      # still fail CI. Note that --no-audit / COMPOSER_NO_AUDIT do not affect
+      # this; only the policy config does (composer/composer#12607).
+      - name: Allow resolving end-of-life framework versions
+        if: ${{ matrix.eol }}
+        run: composer config policy.advisories.block false
 
       - name: Install dependencies
         run: |
