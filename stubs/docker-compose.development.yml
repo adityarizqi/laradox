@@ -24,6 +24,9 @@ services:
     environment:
       - LARADOX_DOMAIN=${LARADOX_DOMAIN:-laravel.docker.localhost}
       - LARADOX_FRANKENPHP_PORT=${LARADOX_FRANKENPHP_PORT:-8080}
+      # Only substitute LARADOX_* placeholders in the template, so nginx's own
+      # runtime variables survive envsubst untouched.
+      - NGINX_ENVSUBST_FILTER=LARADOX_
     volumes:
       - ./docker/nginx/nginx.conf:/etc/nginx/nginx.conf:ro
       - ./docker/nginx/conf.d/app.conf:/etc/nginx/templates/app.conf.template

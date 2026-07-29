@@ -117,6 +117,16 @@ php artisan laradox:logs php --follow
 # View last 100 lines
 php artisan laradox:logs php --tail=100
 
+# Check service health, and add resource usage
+php artisan laradox:status
+php artisan laradox:status --stats --watch
+
+# Enter a container
+php artisan laradox:shell php
+
+# Benchmark the application
+php artisan laradox:benchmark --requests=500 --concurrency=25
+
 # Run artisan commands
 ./php artisan migrate
 ./php artisan tinker
@@ -172,7 +182,27 @@ php artisan laradox:up --force-ssl=false
    php artisan laradox:up --environment=production --build --detach
    ```
 
+4. Warm the production caches:
+   ```bash
+   php artisan laradox:optimize
+   ```
+
 > **Important**: Production requires SSL certificates. Use `--force-ssl=false` to bypass (not recommended).
+
+### Deploying a New Release
+
+Once the stack is up, releases run through a single command:
+
+```bash
+# See what would happen
+php artisan laradox:deploy --dry-run
+
+# Deploy (pull → build → health check → migrate → optimize)
+php artisan laradox:deploy
+
+# Unattended, behind a maintenance page
+php artisan laradox:deploy --force --maintenance
+```
 
 ## Troubleshooting
 

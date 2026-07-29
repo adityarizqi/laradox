@@ -173,6 +173,18 @@ php artisan laradox:logs [service] [--follow] [--tail=100] [--timestamps]
 
 # Enter container shell interactively
 php artisan laradox:shell [service] [--environment=development] [--user=www-data] [--shell=bash]
+
+# Show service health and resource usage
+php artisan laradox:status [service] [--stats] [--watch] [--json]
+
+# Build (or clear) the production caches inside the containers
+php artisan laradox:optimize [--environment=production] [--clear]
+
+# Deploy: pull, build, migrate, optimize and health-check
+php artisan laradox:deploy [--environment=production] [--dry-run] [--force]
+
+# Benchmark the application over HTTP
+php artisan laradox:benchmark [url] [--requests=200] [--concurrency=10]
 ```
 
 #### SSL Configuration Options
@@ -231,6 +243,118 @@ php artisan laradox:shell --environment=production
 
 Available services: `php`, `nginx`, `node`, `scheduler`, `queue`
 
+### Service Health & Monitoring
+
+`laradox:status` reports every service declared in the compose file — including the ones that
+have no container yet — with its state, healthcheck result, uptime and published ports:
+
+```bash
+# One-off report
+php artisan laradox:status
+
+# Add CPU, memory and network usage per container
+php artisan laradox:status --stats
+
+# Keep the report on screen, refreshing every 5 seconds
+php artisan laradox:status --watch --stats --interval=10
+
+# A single service
+php artisan laradox:status php
+
+# Machine-readable output
+php artisan laradox:status --json
+```
+
+The command exits with code `1` when any service is missing, stopped, still starting or
+unhealthy, so it can gate a CI step or a deployment script:
+
+```bash
+php artisan laradox:status --environment=production || echo "Something is down"
+```
+
+### Production Optimization
+
+`laradox:optimize` runs Laravel's cache warm-up **inside** the container, then recycles the
+Octane workers so the new bootstrap cache is actually picked up:
+
+```bash
+# Autoloader + config/route/view/event caches + octane:reload
+php artisan laradox:optimize
+
+# Undo it (optimize:clear + reload)
+php artisan laradox:optimize --clear
+
+# Skip individual steps
+php artisan laradox:optimize --skip-autoloader --skip-reload
+
+# Target another environment or service
+php artisan laradox:optimize --environment=development --service=php
+```
+
+The Composer autoloader is dumped with `--classmap-authoritative`, and `--no-dev` is added only
+for the production environment. Optimizing a development environment asks for confirmation
+first, because cached config freezes the current `.env`.
+
+### Deployment
+
+`laradox:deploy` runs the whole release in order and stops at the first failure:
+
+1. `git pull --ff-only`
+2. maintenance mode (optional)
+3. `docker compose build`
+4. `docker compose up -d --remove-orphans`
+5. wait for every service to report healthy
+6. `composer install --no-dev --optimize-autoloader`
+7. `npm ci && npm run build`
+8. `php artisan migrate --force`
+9. `laradox:optimize`
+10. leave maintenance mode
+
+```bash
+# Preview the plan, execute nothing
+php artisan laradox:deploy --dry-run
+
+# Deploy to production
+php artisan laradox:deploy
+
+# Non-interactive (CI), with a maintenance page while the release runs
+php artisan laradox:deploy --force --maintenance
+
+# Skip steps that do not apply to your setup
+php artisan laradox:deploy --force --no-pull --no-assets --no-migrate
+```
+
+Every step can be skipped with `--no-pull`, `--no-build`, `--no-composer`, `--no-assets`,
+`--no-migrate` and `--no-optimize`; starting the containers and the health gate always run.
+If a step fails, the application is taken back out of maintenance mode and the command prints
+where to look. Rolling back means checking out the previous revision and deploying again.
+
+> **Note**: `--force` is required to deploy non-interactively, so an unattended run can never
+> apply migrations by accident.
+
+### Benchmarking
+
+`laradox:benchmark` drives concurrent HTTP requests from the host and reports latency
+percentiles. It needs no external load-testing tool — only PHP's cURL extension:
+
+```bash
+# Benchmark the configured domain (HTTPS when certificates exist)
+php artisan laradox:benchmark
+
+# Tune the load
+php artisan laradox:benchmark --requests=1000 --concurrency=50 --warmup=25
+
+# A specific URL, ignoring a self-signed development certificate
+php artisan laradox:benchmark https://laravel.docker.localhost/api/health --insecure
+
+# Machine-readable output, for tracking numbers between releases
+php artisan laradox:benchmark --json > benchmark.json
+```
+
+The report covers throughput, success rate, transferred bytes, the status-code distribution and
+min/avg/p50/p90/p95/p99/max latency. Warm-up requests are excluded so Octane's first-request
+cost does not skew the percentiles.
+
 ### Docker Compose Commands
 
 For direct control over Docker:
@@ -272,6 +396,22 @@ Laradox automatically uses the appropriate nginx configuration based on your env
 The configuration is automatically selected and copied when you run `php artisan laradox:up`.
 
 > **Note**: You don't need to manually edit nginx configuration files. Laradox handles this automatically.
+
+**Tuning applied out of the box:**
+
+| Setting | Why |
+|---------|-----|
+| `pcre_jit on` | Faster regex evaluation for location and rewrite matching |
+| `http2 on` | HTTP/2 via the current directive, instead of the `listen ... http2` parameter deprecated in nginx 1.25.1 |
+| `proxy_buffering` + 8×16k buffers | Frees the FrankenPHP worker as soon as the response is read, instead of holding it open for a slow client |
+| `keepalive_requests 1000` on the upstream | Reuses upstream connections and spreads reconnects over time |
+| `map $http_upgrade $connection_upgrade` | WebSockets and Vite HMR pass through, while normal requests keep the upstream connection pool alive |
+| `server_tokens off` | The nginx version is not advertised in responses or error pages |
+| `ssl_buffer_size 4k` | Lower time-to-first-byte on TLS connections |
+| `NGINX_ENVSUBST_FILTER=LARADOX_` | Template substitution only touches `LARADOX_*`, so nginx's own runtime variables are left alone |
+
+Gzip stays off on purpose: FrankenPHP/Caddy already compresses the response, and compressing
+twice only burns CPU.
 
 ### Environment Variables
 
@@ -344,6 +484,28 @@ Because production caches compiled code indefinitely, deploys need an image rebu
 
 The image is architecture-aware, so it builds on both `amd64` and `arm64` hosts
 (Apple Silicon included).
+
+**Image size** — the runtime image only carries what the selected environment actually runs:
+
+- Compiled extensions are stripped of their symbol tables and their static archives dropped
+  before they leave the builder stage.
+- Supervisor and Supercronic are installed in the `production` stage only. Development runs the
+  scheduler with `schedule:work` and the queue with `queue:work`, so neither is needed there.
+- All compilation happens in the throwaway `builder` stage; the toolchain never reaches the
+  runtime image.
+
+Measured on `amd64` with FrankenPHP 1.12 / PHP 8.4, with an unchanged extension list:
+
+| Stage | Before | After |
+|-------|--------|-------|
+| `development` | 281 MB | **212 MB** (−25%) |
+| `production` | 281 MB | **278 MB** (−1%) |
+
+Check your own build with:
+
+```bash
+docker images --format '{{.Repository}}:{{.Tag}} {{.Size}}' | grep php
+```
 
 ### Scheduler Configuration
 

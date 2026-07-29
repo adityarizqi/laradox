@@ -11,15 +11,15 @@ This roadmap outlines the planned features, improvements, and milestones for Lar
 #### Developer Tools
 - [x] `laradox:logs` - View container logs with filtering ✅ (v2.0.4)
 - [x] `laradox:shell` - Enter containers interactively ✅ (v2.0.6)
-- [ ] `laradox:status` - Service health checks and monitoring
-- [ ] `laradox:deploy` - Production deployment automation
-- [ ] `laradox:optimize` - Production optimization tooling
+- [x] `laradox:status` - Service health checks and monitoring ✅ (v2.1.0)
+- [x] `laradox:deploy` - Production deployment automation ✅ (v2.1.0)
+- [x] `laradox:optimize` - Production optimization tooling ✅ (v2.1.0)
 
 #### Performance Enhancements
-- [ ] Nginx configuration optimization
-- [ ] Docker image size reduction
-- [ ] Performance benchmarking tools
-- [ ] Resource usage monitoring
+- [x] Nginx configuration optimization ✅ (v2.1.0)
+- [x] Docker image size reduction ✅ (v2.1.0)
+- [x] Performance benchmarking tools ✅ (v2.1.0) — `laradox:benchmark`
+- [x] Resource usage monitoring ✅ (v2.1.0) — `laradox:status --stats`
 
 ---
 
