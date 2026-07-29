@@ -4,6 +4,8 @@ All notable changes to `laradox` will be documented in this file.
 
 ## [Unreleased]
 
+## 2.0.8 - 2026-07-28
+
 ### Added
 - Laravel 13.x support (`illuminate/support` and `illuminate/console` now allow `^13.0`)
   - Orchestra Testbench `^11.0` and PHPUnit `^12.0` accepted in `require-dev`
