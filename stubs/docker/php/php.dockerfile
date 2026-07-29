@@ -9,6 +9,10 @@
 #
 # The runtime port is read from the LARADOX_FRANKENPHP_PORT *environment* variable
 # (not a build arg), so a single image can be started on any port.
+#
+# Size: everything that only one environment needs (supervisor, supercronic) is
+# installed in that environment's stage rather than in `base`, and the compiled
+# extensions are stripped before they are copied out of the builder.
 
 ARG FRANKENPHP_VERSION=1.12
 ARG PHP_VERSION=8.4
@@ -36,7 +40,9 @@ RUN apk add --no-cache \
     linux-headers \
     postgresql-dev
 
-# Bundled + PECL extensions in one layer to keep the image thin.
+# Bundled + PECL extensions in one layer to keep the image thin. Static archives
+# are dropped and the shared objects stripped of their symbol tables, which is
+# dead weight in a runtime image.
 RUN docker-php-ext-configure gd --with-freetype --with-jpeg --with-webp \
     && docker-php-ext-install -j"$(nproc)" \
         bcmath \
@@ -49,7 +55,8 @@ RUN docker-php-ext-configure gd --with-freetype --with-jpeg --with-webp \
     && pecl channel-update pecl.php.net \
     && pecl install redis excimer channel://pecl.php.net/uv-0.3.0 \
     && docker-php-ext-enable redis excimer uv \
-    && rm -rf /tmp/pear /usr/local/lib/php/extensions/*/*.a
+    && rm -rf /tmp/pear /usr/local/lib/php/extensions/*/*.a \
+    && find /usr/local/lib/php/extensions -name '*.so' -exec strip --strip-all {} +
 
 # Composer + Supercronic (arch-aware, so arm64 hosts build too).
 COPY --from=composer:2 /usr/bin/composer /usr/local/bin/composer
@@ -64,8 +71,8 @@ FROM dunglas/frankenphp:${FRANKENPHP_VERSION}-php${PHP_VERSION}-alpine AS base
 ARG USER_ID=1000
 ARG GROUP_ID=1000
 
-# Shared libraries the extensions above link against, plus supervisor for the
-# production queue container.
+# Shared libraries the extensions above link against. Nothing environment
+# specific belongs here — see the notes on the development/production stages.
 RUN apk add --no-cache \
     freetype \
     icu-libs \
@@ -74,16 +81,11 @@ RUN apk add --no-cache \
     libpq \
     libuv \
     libwebp \
-    libzip \
-    supervisor
+    libzip
 
 COPY --from=builder /usr/local/bin/composer /usr/local/bin/composer
-COPY --from=builder /usr/local/bin/supercronic /usr/local/bin/supercronic
 COPY --from=builder /usr/local/lib/php/extensions/ /usr/local/lib/php/extensions/
 COPY --from=builder /usr/local/etc/php/conf.d/ /usr/local/etc/php/conf.d/
-
-COPY supervisord.conf /etc/supervisord.conf
-COPY laravel-worker.conf /etc/supervisord.d/laravel-worker.conf
 
 ENV COMPOSER_ALLOW_SUPERUSER=1 \
     COMPOSER_HOME=/config/composer \
@@ -102,6 +104,9 @@ EXPOSE ${LARADOX_FRANKENPHP_PORT}
 
 
 # STAGE 3: Development
+#
+# The development compose file runs the scheduler with `schedule:work` and the
+# queue with `queue:work`, so neither supercronic nor supervisor is installed.
 FROM base AS development
 
 ARG USER_ID=1000
@@ -129,7 +134,16 @@ CMD ["sh", "-c", "exec php artisan octane:frankenphp --watch --host=0.0.0.0 --po
 
 
 # STAGE 4: Production
+#
+# Supervisor drives the queue container and supercronic drives the scheduler,
+# so both are pulled in here instead of in `base`.
 FROM base AS production
+
+RUN apk add --no-cache supervisor
+
+COPY --from=builder /usr/local/bin/supercronic /usr/local/bin/supercronic
+COPY supervisord.conf /etc/supervisord.conf
+COPY laravel-worker.conf /etc/supervisord.d/laravel-worker.conf
 
 # Timestamp validation off + tracing JIT: the usual Octane production profile.
 # Requires a deploy-time image rebuild (or `octane:reload`) to pick up new code.

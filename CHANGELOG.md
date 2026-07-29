@@ -4,6 +4,36 @@ All notable changes to `laradox` will be documented in this file.
 
 ## [Unreleased]
 
+### Added
+- `laradox:status` — service health checks and monitoring
+  - Reports state, healthcheck result, uptime and published ports for every service in the
+    compose file, including services that have no container yet
+  - `--stats` adds per-container CPU, memory and network usage
+  - `--watch` (with `--interval`) keeps the report on screen
+  - `--json` for machine-readable output, and a non-zero exit code when anything is not
+    running or not healthy, so CI and deploy scripts can gate on it
+- `laradox:optimize` — production optimization tooling
+  - Dumps a class-map-authoritative Composer autoloader, caches config, routes, views and
+    events, then reloads the Octane workers so the new bootstrap cache takes effect
+  - `--clear` reverses the whole thing, `--skip-autoloader` / `--skip-reload` drop single steps
+  - `--no-dev` is only passed to Composer for the production environment, and optimizing a
+    development environment asks for confirmation first
+- `laradox:deploy` — production deployment automation
+  - Pull, optional maintenance mode, build, start, health gate, Composer install, asset build,
+    migrations, cache warm-up, and back out of maintenance mode
+  - `--dry-run` prints the plan without executing it; `--force` is required to deploy
+    non-interactively
+  - Every step can be skipped (`--no-pull`, `--no-build`, `--no-composer`, `--no-assets`,
+    `--no-migrate`, `--no-optimize`); a failure takes the application back out of maintenance
+    mode and reports where to look
+- `laradox:benchmark` — performance benchmarking
+  - Concurrent HTTP load generated from the host with cURL, no external tooling required
+  - Reports throughput, success rate, transfer, status-code distribution and
+    min/avg/p50/p90/p95/p99/max latency, with warm-up requests excluded from the results
+  - `--json` output for tracking numbers between releases
+- `InspectsContainers` concern shared by the new commands: container inspection, resource
+  sampling, health polling and in-container command execution
+
 ## 2.0.8 - 2026-07-28
 
 ### Added

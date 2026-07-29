@@ -3,11 +3,15 @@
 namespace Laradox;
 
 use Illuminate\Support\ServiceProvider;
+use Laradox\Console\BenchmarkCommand;
+use Laradox\Console\DeployCommand;
 use Laradox\Console\DownCommand;
 use Laradox\Console\InstallCommand;
 use Laradox\Console\LogsCommand;
+use Laradox\Console\OptimizeCommand;
 use Laradox\Console\SetupSSLCommand;
 use Laradox\Console\ShellCommand;
+use Laradox\Console\StatusCommand;
 use Laradox\Console\UpCommand;
 
 class LaradoxServiceProvider extends ServiceProvider
@@ -26,6 +30,10 @@ class LaradoxServiceProvider extends ServiceProvider
                 DownCommand::class,
                 LogsCommand::class,
                 ShellCommand::class,
+                StatusCommand::class,
+                OptimizeCommand::class,
+                DeployCommand::class,
+                BenchmarkCommand::class,
             ]);
 
             // Publish configuration

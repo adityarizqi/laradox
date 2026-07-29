@@ -4,106 +4,129 @@ on:
   release:
     types: [published]
 
+permissions:
+  contents: write
+
 jobs:
   update-docs:
+    # Prereleases are not part of the changelog history.
+    if: ${{ !github.event.release.prerelease }}
     runs-on: ubuntu-latest
-    permissions:
-      contents: write
-      pull-requests: write
-    
+
     steps:
-      - name: Checkout code
+      # A release event checks out the tag by default, which is a detached HEAD
+      # and so cannot be pushed. Checking out the default branch instead is what
+      # lets this commit the changelog directly rather than opening a pull
+      # request for a file it already generated.
+      - name: Checkout default branch
         uses: actions/checkout@v4
         with:
-          fetch-depth: 0
-          token: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Extract version from tag
-        id: version
-        run: |
-          # Extract version from tag (e.g., v2.1.0 -> 2.1.0)
-          VERSION="${GITHUB_REF#refs/tags/}"
-          VERSION="${VERSION#v}"
-          echo "version=$VERSION" >> $GITHUB_OUTPUT
-          echo "Version: $VERSION"
-
-      - name: Get release date
-        id: date
-        run: |
-          DATE=$(date +"%Y-%m-%d")
-          echo "date=$DATE" >> $GITHUB_OUTPUT
-          echo "Date: $DATE"
+          ref: ${{ github.event.repository.default_branch }}
 
       - name: Update CHANGELOG.md
+        env:
+          # Passed through the environment rather than interpolated into the
+          # script, so a release body can never be executed as shell.
+          RELEASE_BODY: ${{ github.event.release.body }}
+          RELEASE_TAG: ${{ github.event.release.tag_name }}
+          PUBLISHED_AT: ${{ github.event.release.published_at }}
         run: |
-          VERSION="${{ steps.version.outputs.version }}"
-          DATE="${{ steps.date.outputs.date }}"
-          
-          # Get release body
-          RELEASE_BODY=$(cat <<- 'EOF'
-          ${{ github.event.release.body }}
-          EOF
-          )
-          
-          # Create temporary file with new changelog entry
-          cat > /tmp/new_entry.md <<- EOF
-          ## ${VERSION} - ${DATE}
-          
-          ${RELEASE_BODY}
-          
-          EOF
-          
-          # Insert new entry after [Unreleased] section
-          awk '/## \[Unreleased\]/ {print; print ""; system("cat /tmp/new_entry.md"); next} 1' CHANGELOG.md > /tmp/changelog.md
-          mv /tmp/changelog.md CHANGELOG.md
-          
-          echo "Updated CHANGELOG.md with version ${VERSION}"
+          python3 - <<'PY'
+          import os
+          import re
+          import sys
 
-      - name: Check for changes
-        id: check_changes
+          version = os.environ['RELEASE_TAG'].lstrip('v')
+          date = os.environ['PUBLISHED_AT'][:10]
+
+          # GitHub stores release bodies with CRLF line endings; normalising here
+          # keeps CHANGELOG.md from drifting into mixed line endings.
+          body = os.environ.get('RELEASE_BODY', '').replace('\r\n', '\n').strip()
+
+          # Release bodies use h2 for sections like "What's Changed", which would
+          # otherwise sit at the same level as the version headings themselves.
+          body = re.sub(r'(?m)^## (?!#)', '### ', body)
+
+          path = 'CHANGELOG.md'
+          changelog = open(path, encoding='utf-8').read()
+
+          if re.search(rf'(?m)^## {re.escape(version)} - ', changelog):
+              print(f'CHANGELOG.md already documents {version}; leaving it alone.')
+              sys.exit(0)
+
+          lines = changelog.splitlines(keepends=True)
+
+          unreleased = next(
+              (i for i, line in enumerate(lines) if line.startswith('## [Unreleased]')),
+              None,
+          )
+          if unreleased is None:
+              sys.exit('Could not find the "## [Unreleased]" anchor in CHANGELOG.md')
+
+          # Insert *after* the whole Unreleased section rather than immediately
+          # below its heading, so notes already staged there stay under
+          # Unreleased instead of being absorbed into this release.
+          insert_at = next(
+              (i for i in range(unreleased + 1, len(lines)) if lines[i].startswith('## ')),
+              len(lines),
+          )
+
+          entry = f'## {version} - {date}\n'
+          if body:
+              entry += f'\n{body}\n'
+
+          head = ''.join(lines[:insert_at]).rstrip('\n')
+          tail = ''.join(lines[insert_at:])
+          open(path, 'w', encoding='utf-8').write(
+              f'{head}\n\n{entry}\n{tail}' if tail else f'{head}\n\n{entry}'
+          )
+
+          print(f'Inserted {version} ({date}) into CHANGELOG.md')
+          PY
+
+      - name: Commit and push
+        id: commit
+        env:
+          BRANCH: ${{ github.event.repository.default_branch }}
+          TAG: ${{ github.event.release.tag_name }}
         run: |
           if git diff --quiet CHANGELOG.md; then
-            echo "has_changes=false" >> $GITHUB_OUTPUT
-          else
-            echo "has_changes=true" >> $GITHUB_OUTPUT
+            echo "No changelog changes to commit."
+            echo "committed=false" >> "$GITHUB_OUTPUT"
+            exit 0
           fi
 
-      - name: Create Pull Request
-        if: steps.check_changes.outputs.has_changes == 'true'
-        uses: peter-evans/create-pull-request@v6
-        with:
-          token: ${{ secrets.GITHUB_TOKEN }}
-          commit-message: "docs: update changelog for v${{ steps.version.outputs.version }}"
-          title: "docs: update changelog for release v${{ steps.version.outputs.version }}"
-          body: |
-            This PR automatically updates the CHANGELOG.md file for release v${{ steps.version.outputs.version }}.
-            
-            ## Changes
-            - Updated CHANGELOG.md with release v${{ steps.version.outputs.version }}
-            
-            ## Release
-            ${{ github.event.release.html_url }}
-            
-            ---
-            *This PR was automatically generated by the Update Release Documentation workflow.*
-          branch: docs/release-v${{ steps.version.outputs.version }}
-          base: main
-          delete-branch: true
-          labels: |
-            documentation
-            automated
-          assignees: ${{ github.repository_owner }}
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add CHANGELOG.md
+          git commit -m "docs: add changelog entry for ${TAG} [skip ci]"
+
+          # The branch may have moved on while the release was being published.
+          for attempt in 1 2 3; do
+            if git push origin "HEAD:${BRANCH}"; then
+              echo "committed=true" >> "$GITHUB_OUTPUT"
+              exit 0
+            fi
+            echo "Push rejected, rebasing onto ${BRANCH} (attempt ${attempt})..."
+            git pull --rebase --autostash origin "${BRANCH}"
+          done
+
+          echo "Could not push the changelog update after 3 attempts." >&2
+          exit 1
 
       - name: Summary
+        if: always()
         run: |
-          echo "## Release Documentation Update" >> $GITHUB_STEP_SUMMARY
-          echo "" >> $GITHUB_STEP_SUMMARY
-          echo "- **Version**: ${{ steps.version.outputs.version }}" >> $GITHUB_STEP_SUMMARY
-          echo "- **Date**: ${{ steps.date.outputs.date }}" >> $GITHUB_STEP_SUMMARY
-          echo "- **Changes Detected**: ${{ steps.check_changes.outputs.has_changes }}" >> $GITHUB_STEP_SUMMARY
-          echo "" >> $GITHUB_STEP_SUMMARY
-          if [ "${{ steps.check_changes.outputs.has_changes }}" == "true" ]; then
-            echo "✅ Pull request created successfully" >> $GITHUB_STEP_SUMMARY
-          else
-            echo "ℹ️ No changes needed" >> $GITHUB_STEP_SUMMARY
-          fi
+          {
+            echo "## Release Documentation Update"
+            echo ""
+            echo "- **Release**: ${{ github.event.release.tag_name }}"
+            echo "- **Branch**: ${{ github.event.repository.default_branch }}"
+            if [ "${{ steps.commit.outputs.committed }}" = "true" ]; then
+              echo ""
+              echo "✅ CHANGELOG.md updated and pushed."
+            else
+              echo ""
+              echo "ℹ️ CHANGELOG.md already up to date; nothing committed."
+            fi
+          } >> "$GITHUB_STEP_SUMMARY"

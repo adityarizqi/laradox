@@ -20,9 +20,18 @@ laradox/
 │       └── ssl/                             # SSL certificates
 ├── src/
 │   ├── Console/
+│   │   ├── Concerns/
+│   │   │   ├── ChecksDocker.php             # Docker/Compose detection and installation
+│   │   │   └── InspectsContainers.php       # Container inspection, stats and health polling
+│   │   ├── BenchmarkCommand.php             # HTTP benchmark command
+│   │   ├── DeployCommand.php                # Deployment automation command
 │   │   ├── DownCommand.php                  # Stop containers command
 │   │   ├── InstallCommand.php               # Installation command
+│   │   ├── LogsCommand.php                  # Container logs command
+│   │   ├── OptimizeCommand.php              # Production cache warm-up command
 │   │   ├── SetupSSLCommand.php              # SSL setup command
+│   │   ├── ShellCommand.php                 # Interactive container shell command
+│   │   ├── StatusCommand.php                # Health and resource monitoring command
 │   │   └── UpCommand.php                    # Start containers command
 │   └── LaradoxServiceProvider.php           # Laravel service provider
 ├── stubs/
@@ -108,6 +117,11 @@ php artisan laradox:up --detach
 | `laradox:up` | Start Docker containers |
 | `laradox:down` | Stop Docker containers |
 | `laradox:logs` | View container logs with filtering options |
+| `laradox:shell` | Enter a container interactively |
+| `laradox:status` | Service health checks and resource usage |
+| `laradox:optimize` | Build or clear the production caches in the containers |
+| `laradox:deploy` | Pull, build, migrate, optimize and health-check a release |
+| `laradox:benchmark` | Benchmark the application over HTTP |
 
 ## Services Included
 
